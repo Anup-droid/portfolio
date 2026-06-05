@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Collapsibility Matters in Indirect Comparisons | HTA Methods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #3d3d5c;
+    --parchment: #faf8f3;
+    --cream: #f4f0e6;
+    --rule: #d4cfc0;
+    --accent: #c0392b;
+    --accent-dark: #922b21;
+    --accent-muted: #f0e6e5;
+    --teal: #1a6b6b;
+    --teal-light: #e8f4f4;
+    --gold: #b8860b;
+    --gold-light: #fdf6e3;
+    --note-bg: #f7f4ee;
+    --code-bg: #f0ede5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--parchment);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.75;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 14px 0;
+    border-bottom: 3px solid var(--accent);
+  }
+  .site-header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .site-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--accent);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 72px 32px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 39px,
+        rgba(255,255,255,0.03) 39px,
+        rgba(255,255,255,0.03) 40px
+      );
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #fff;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: #f0d9b5;
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: rgba(250,248,243,0.75);
+    max-width: 600px;
+    line-height: 1.7;
+    border-left: 3px solid var(--accent);
+    padding-left: 18px;
+  }
+  .hero-meta {
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .author-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .author-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+  }
+  .author-info { font-size: 0.82rem; }
+  .author-info strong {
+    display: block;
+    color: rgba(250,248,243,0.95);
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+  }
+  .author-info span { color: rgba(250,248,243,0.5); }
+  .meta-divider { color: rgba(255,255,255,0.2); }
+  .read-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: rgba(250,248,243,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 64px 32px;
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 64px;
+    align-items: start;
+  }
+
+  /* ── ARTICLE BODY ── */
+  article h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 2.8em 0 0.8em;
+    padding-bottom: 0.4em;
+    border-bottom: 2px solid var(--rule);
+    position: relative;
+  }
+  article h2::before {
+    content: attr(data-num);
+    position: absolute;
+    right: 0;
+    bottom: 0.6em;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--rule);
+    letter-spacing: 0.1em;
+  }
+  article h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    margin: 2em 0 0.6em;
+    font-style: italic;
+  }
+  article p { margin-bottom: 1.4em; color: var(--ink-light); }
+  article p:first-of-type::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8em;
+    font-weight: 700;
+    float: left;
+    line-height: 0.85;
+    margin: 0.06em 0.1em 0 0;
+    color: var(--accent);
+  }
+  article strong { color: var(--ink); font-weight: 600; }
+
+  /* ── LEAD SUMMARY ── */
+  .lead-box {
+    background: var(--ink);
+    color: var(--parchment);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 2.5em;
+    position: relative;
+  }
+  .lead-box::before {
+    content: 'TL;DR';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .lead-box p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: rgba(250,248,243,0.85);
+  }
+  .lead-box p::first-letter { all: unset; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-muted);
+    padding: 20px 24px;
+    margin: 2em 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout-teal {
+    border-left-color: var(--teal);
+    background: var(--teal-light);
+  }
+  .callout-gold {
+    border-left-color: var(--gold);
+    background: var(--gold-light);
+  }
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .callout-teal .callout-label { color: var(--teal); }
+  .callout .callout-label { color: var(--accent); }
+  .callout-gold .callout-label { color: var(--gold); }
+  .callout p { margin: 0; font-size: 0.92rem; }
+  .callout p::first-letter { all: unset; }
+
+  /* ── MATH DISPLAY ── */
+  .math-block {
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 1.8em 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .math-block .eq {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .math-block .eq-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--rule);
+    margin-top: 10px;
+  }
+
+  /* ── FIGURE ── */
+  .figure {
+    margin: 2.5em 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    background: white;
+  }
+  .figure-body {
+    padding: 24px;
+  }
+  .figure-caption {
+    background: var(--note-bg);
+    border-top: 1px solid var(--rule);
+    padding: 12px 20px;
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    line-height: 1.5;
+  }
+  .figure-caption strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* ── SVG CHARTS ── */
+  .chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.8em 0;
+    font-size: 0.88rem;
+  }
+  .compare-table thead tr {
+    background: var(--ink);
+    color: var(--parchment);
+  }
+  .compare-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .compare-table tbody tr:nth-child(even) { background: var(--note-bg); }
+  .compare-table tbody tr:hover { background: var(--cream); }
+  .compare-table tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .tag-both { background: var(--teal-light); color: var(--teal); }
+  .tag-marg { background: var(--accent-muted); color: var(--accent-dark); }
+  .tag-neither { background: #f0f0f0; color: #888; }
+  .tag-any { background: #e8f4e8; color: #2d7a2d; }
+
+  /* ── DECISION FRAMEWORK ── */
+  .decision-flow {
+    margin: 2em 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-num {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--ink);
+    color: var(--parchment);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .flow-step.accent .flow-num { background: var(--accent); }
+  .flow-step.teal .flow-num { background: var(--teal); }
+  .flow-content h4 {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .flow-content p {
+    font-size: 0.88rem;
+    margin: 0;
+    color: var(--ink-light);
+  }
+  .flow-content p::first-letter { all: unset; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { position: sticky; top: 32px; }
+  .sidebar-card {
+    background: var(--note-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 22px;
+    margin-bottom: 24px;
+  }
+  .sidebar-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    color: var(--ink);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .toc-list { list-style: none; }
+  .toc-list li { margin-bottom: 6px; }
+  .toc-list a {
+    font-size: 0.82rem;
+    color: var(--ink-light);
+    text-decoration: none;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+  .toc-list a:hover { color: var(--accent); }
+  .toc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--rule);
+    flex-shrink: 0;
+  }
+  .key-term {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+  }
+  .key-term:last-child { margin-bottom: 0; }
+  .key-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .key-dot-red { background: var(--accent); }
+  .key-dot-teal { background: var(--teal); }
+  .key-dot-gold { background: var(--gold); }
+  .key-term strong { display: block; color: var(--ink); font-size: 0.8rem; }
+  .key-term span { color: var(--ink-light); line-height: 1.4; }
+
+  .ref-list { list-style: none; counter-reset: refs; }
+  .ref-list li {
+    counter-increment: refs;
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    margin-bottom: 10px;
+    line-height: 1.5;
+    padding-left: 26px;
+    position: relative;
+  }
+  .ref-list li::before {
+    content: '[' counter(refs) ']';
+    position: absolute;
+    left: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(250,248,243,0.5);
+    padding: 36px 32px;
+    font-size: 0.8rem;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ── CONFLICT DIAGRAM ── */
+  .conflict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 1.8em 0;
+  }
+  .conflict-cell {
+    padding: 18px 20px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .conflict-cell h5 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .conflict-cell p { font-size: 0.88rem; margin: 0; line-height: 1.5; }
+  .conflict-cell p::first-letter { all: unset; }
+  .cell-cond { border-color: var(--teal); background: var(--teal-light); }
+  .cell-cond h5 { color: var(--teal); }
+  .cell-marg { border-color: var(--accent); background: var(--accent-muted); }
+  .cell-marg h5 { color: var(--accent); }
+
+  /* ── INLINE CITE ── */
+  .cite {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    vertical-align: super;
+    line-height: 0;
+  }
+
+  /* ── PULL QUOTE ── */
+  blockquote.pull {
+    margin: 2.5em 0;
+    padding: 0 0 0 28px;
+    border-left: 5px solid var(--accent);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  blockquote.pull cite {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 0.7rem;
+    color: var(--ink-light);
+    margin-top: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── ANIMATION ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-inner > * {
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-inner > *:nth-child(1) { animation-delay: 0.05s; }
+  .hero-inner > *:nth-child(2) { animation-delay: 0.15s; }
+  .hero-inner > *:nth-child(3) { animation-delay: 0.25s; }
+  .hero-inner > *:nth-child(4) { animation-delay: 0.35s; }
+
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; gap: 40px; }
+    .sidebar { position: static; }
+    .conflict-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <span class="site-name">HTA Methods & Evidence Synthesis</span>
+    <span class="site-badge">METHODS BLOG</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Evidence Synthesis · Network Meta-Analysis · Estimands</div>
+    <h1>Why <em>Collapsibility</em> Is the Hidden Fault Line in Indirect Treatment Comparisons</h1>
+    <p class="hero-subtitle">Non-collapsible effect measures like odds ratios and hazard ratios are standard currency in HTA submissions. But when effect modification enters the picture, marginal and conditional estimates can recommend <em>opposite</em> treatments — with neither being wrong.</p>
+    <div class="hero-meta">
+      <div class="author-chip">
+        <div class="author-avatar">HTA</div>
+        <div class="author-info">
+          <strong>HTA Methods Desk</strong>
+          <span>Senior Statistician · Evidence Synthesis</span>
+        </div>
+      </div>
+      <span class="meta-divider">|</span>
+      <span class="read-time">~12 min read · June 2025</span>
+      <span class="meta-divider">|</span>
+      <span class="read-time">Based on Phillippo et al. (2025) RSM</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="lead-box">
+      <p>When effect modification is present alongside non-collapsible effect measures (odds ratios, hazard ratios), population-average conditional and marginal estimands can produce conflicting treatment rankings. A single treatment decision based on one estimand will either disadvantage the majority of patients or produce a worse expected event count overall. Multilevel network meta-regression (ML-NMR) is currently the only population-adjustment method capable of producing both estimates in any target population of interest.</p>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h2 id="s1" data-num="§ 01">Setting the Scene: What is Non-Collapsibility?</h2>
+
+    <p>Every HTA statistician working with binary or time-to-event outcomes has chosen between odds ratios, hazard ratios, risk ratios, and risk differences. That choice is not merely a matter of convention — it has deep structural consequences for how treatment effects are synthesised, compared, and ultimately acted upon.</p>
+
+    <p>An effect measure is <strong>non-collapsible</strong> when the population-average marginal effect cannot be expressed as a weighted average of the individual- or subgroup-specific conditional effects.<span class="cite">[1,2]</span> The logit and probit link functions — used in logistic regression — produce non-collapsible log odds ratios. Similarly, the Cox proportional hazards model produces non-collapsible log hazard ratios. These are the dominant models in clinical trial analysis and therefore in HTA evidence synthesis.</p>
+
+    <div class="callout callout-teal">
+      <div class="callout-label">Key Insight</div>
+      <p>Non-collapsibility is <strong>not</strong> a model misspecification issue. It is a mathematical consequence of modelling a bounded outcome (probabilities must lie between 0 and 1). Switching to a collapsible measure like a risk difference avoids this, but risks impossible predictions and induces spurious treatment–covariate interactions.</p>
+    </div>
+
+    <p>The practical upshot: conditioning on a prognostic covariate changes the treatment effect estimate and its interpretation, <em>even when there is no interaction between treatment and covariate</em>. This has been well-documented in the literature.<span class="cite">[3]</span> What is far less discussed — and the core contribution of Phillippo et al. (2025)<span class="cite">[4]</span> — is what happens when effect modification is also present.</p>
+
+    <!-- SECTION 2 -->
+    <h2 id="s2" data-num="§ 02">Two Estimands, Two Decision Questions</h2>
+
+    <p>Before we can appreciate the problem, we need clarity on what we are actually estimating. The distinction between conditional and marginal estimands is conceptual, not merely statistical.</p>
+
+    <h3>The Population-Average Conditional Estimand</h3>
+
+    <p>The population-average conditional treatment effect <em>d<sub>ab</sub>(P)</em> is the average of individual-level treatment effects over the covariate distribution of the population P, taken on the linear predictor scale (e.g., log odds ratio scale):</p>
+
+    <div class="math-block">
+      <span class="eq">d_ab(P) = ∫ γ_ab(x) · f⁽ᴾ⁾(x) dx</span>
+      <div class="eq-label">Equation (4) — Phillippo et al. 2025</div>
+    </div>
+
+    <p>This answers the question: <strong>"Which treatment has the greatest average effect for individuals in this population?"</strong> It depends only on the distribution of effect modifiers, not on baseline risk or prognostic factors.</p>
+
+    <h3>The Population-Average Marginal Estimand</h3>
+
+    <p>The population-average marginal treatment effect Δ<sub>ab</sub>(P) is obtained by first computing the average event probability on each treatment, then comparing them:</p>
+
+    <div class="math-block">
+      <span class="eq">Δ_ab(P) = g(π̄_b(P)) − g(π̄_a(P))</span>
+      <span class="eq">where π̄_k(P) = ∫ g⁻¹(η_k(x)) · f⁽ᴾ⁾(x) dx</span>
+      <div class="eq-label">Equations (6)–(7) — Phillippo et al. 2025</div>
+    </div>
+
+    <p>This answers a fundamentally different question: <strong>"Which treatment minimises the marginal average event probability in this population?"</strong> Critically, this estimand depends on baseline risk, prognostic factors, and the full covariate distribution — not just the effect modifiers.</p>
+
+    <div class="conflict-grid">
+      <div class="conflict-cell cell-cond">
+        <h5>Conditional Estimand d_ab(P)</h5>
+        <p>Averages individual treatment effects on the <em>linear predictor scale</em>. Answers: which treatment is best on average for each individual? Stable to changes in baseline risk.</p>
+      </div>
+      <div class="conflict-cell cell-marg">
+        <h5>Marginal Estimand Δ_ab(P)</h5>
+        <p>Compares average event probabilities on the <em>probability scale</em>. Answers: which treatment minimises overall event burden? Sensitive to baseline risk and prognostic factor distribution.</p>
+      </div>
+    </div>
+
+    <blockquote class="pull">
+      "The population-average conditional and marginal effects weigh up effectiveness over the population differently… The population-average marginal effects weigh up the expected number of events overall."
+      <cite>— Phillippo et al. (2025), Research Synthesis Methods</cite>
+    </blockquote>
+
+    <!-- SECTION 3 -->
+    <h2 id="s3" data-num="§ 03">The Conflict: When Rankings Diverge</h2>
+
+    <p>The key result of Phillippo et al. is that, when effect modification is present, these two estimands can produce <strong>conflicting treatment rankings</strong>. This is not a statistical artefact — it reflects two genuinely different and valid decision questions that happen to disagree.</p>
+
+    <p>Consider a worked example with three treatments A, B, C and a single covariate x (uniformly distributed between −1 and 1) that is both prognostic and effect-modifying. With model parameters μ = 0, β₁ = −1, β₂,B = −3, β₂,C = −1, γB = −4, γC = −3, the following results emerge:</p>
+
+    <!-- Visualisation of the rank conflict -->
+    <div class="figure">
+      <div class="figure-body">
+        <svg class="chart-svg" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gradB" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#1a6b6b;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1a6b6b;stop-opacity:0.6" />
+            </linearGradient>
+            <linearGradient id="gradC" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#c0392b;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#c0392b;stop-opacity:0.6" />
+            </linearGradient>
+          </defs>
+          <!-- Grid -->
+          <line x1="80" y1="260" x2="560" y2="260" stroke="#d4cfc0" stroke-width="1"/>
+          <line x1="80" y1="60" x2="80" y2="260" stroke="#d4cfc0" stroke-width="1"/>
+          <!-- Zero line -->
+          <line x1="80" y1="160" x2="560" y2="160" stroke="#888" stroke-width="1" stroke-dasharray="4,4"/>
+          <text x="565" y="164" font-family="JetBrains Mono,monospace" font-size="10" fill="#888">0</text>
+          <!-- Grid lines -->
+          <line x1="80" y1="110" x2="560" y2="110" stroke="#ece8e0" stroke-width="1"/>
+          <line x1="80" y1="210" x2="560" y2="210" stroke="#ece8e0" stroke-width="1"/>
+          <text x="60" y="114" font-family="JetBrains Mono,monospace" font-size="10" fill="#aaa" text-anchor="end">−2</text>
+          <text x="60" y="214" font-family="JetBrains Mono,monospace" font-size="10" fill="#aaa" text-anchor="end">+2</text>
+          <!-- X axis labels -->
+          <text x="80" y="278" font-family="JetBrains Mono,monospace" font-size="10" fill="#aaa" text-anchor="middle">−1.0</text>
+          <text x="320" y="278" font-family="JetBrains Mono,monospace" font-size="10" fill="#aaa" text-anchor="middle">0</text>
+          <text x="560" y="278" font-family="JetBrains Mono,monospace" font-size="10" fill="#aaa" text-anchor="middle">+1.0</text>
+          <!-- Axis labels -->
+          <text x="320" y="298" font-family="Source Serif 4,serif" font-size="11" fill="#888" text-anchor="middle">Covariate x</text>
+          <text x="22" y="165" font-family="Source Serif 4,serif" font-size="11" fill="#888" text-anchor="middle" transform="rotate(-90,22,165)">Log Odds Ratio vs. A</text>
+          <!-- Treatment B line: γ_AB(x) = (γ_B − γ_A) + (β_2B − β_2A)·x = −4 + (−3)·x -->
+          <!-- At x=−1: −4+3=−1 → y=160+50=210; At x=+1: −4−3=−7 → y=160+350 clamped -->
+          <!-- Scale: each unit = 50px. At x=−1 log OR=−1 (y=210); at x=+1 log OR=−7 (off chart) -->
+          <!-- Let's use scale: 30px per unit. y=160 at OR=0 -->
+          <!-- B: at x=−1: OR=−1 y=190; at x=+1: OR=−7 y=370 (clip) -->
+          <!-- C: at x=−1: OR=−2 y=220; at x=+1: OR=−4 y=280 -->
+          <!-- Recalibrate for visibility: scale=20px per unit -->
+          <!-- B: x=−1: y=160+20=180; x=+1: y=160+140=300 -->
+          <!-- C: x=−1: y=160+40=200; x=+1: y=160+80=240 -->
+          <!-- Using scale 18px/unit, γB=−4,β2B=−3: at x=−1: −1→y=178; x=0: −4→y=232; x=1: −7→y=286 -->
+          <!-- γC=−3,β2C=−1: at x=−1: −2→y=196; x=0: −3→y=214; x=1: −4→y=232 -->
+          <!-- Lines cross where: −4−3x = −3−x → −1=2x → x=−0.5 at y=4.5−3(−0.5)=−2.5? wait -->
+          <!-- γAB(x)=−4+(−3)x; γAC(x)=−3+(−1)x; cross when −4−3x=−3−x → −1=2x → x=−0.5 -->
+          <!-- At x=−0.5: −4+1.5=−2.5; scale y=160+2.5*18=205 -->
+          <path d="M80,178 L320,232 L560,286" fill="none" stroke="#1a6b6b" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M80,196 L320,214 L560,232" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Cross point at x=−0.5, which maps to x_pixel = 80 + (−0.5+1)/2*480 = 80+120=200 -->
+          <circle cx="200" cy="205" r="5" fill="#b8860b" stroke="white" stroke-width="1.5"/>
+          <text x="205" y="198" font-family="JetBrains Mono,monospace" font-size="10" fill="#b8860b">x = −0.5</text>
+          <!-- Conditional PA effects as dashed horizontals (averaged over uniform dist) -->
+          <!-- d_AB = −4 + E[−3x] = −4−0=−4 → y=232; d_AC=−3+0=−3 → y=214 -->
+          <line x1="80" y1="232" x2="560" y2="232" stroke="#1a6b6b" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.5"/>
+          <line x1="80" y1="214" x2="560" y2="214" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.5"/>
+          <!-- Labels -->
+          <rect x="400" y="62" width="150" height="90" rx="4" fill="white" stroke="#d4cfc0"/>
+          <circle cx="416" cy="83" r="5" fill="#1a6b6b"/>
+          <text x="426" y="87" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">Treatment B vs. A</text>
+          <line x1="409" y1="105" x2="425" y2="105" stroke="#1a6b6b" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>
+          <text x="430" y="109" font-family="Source Serif 4,serif" font-size="10" fill="#666">Cond. PA d_AB = −4</text>
+          <circle cx="416" cy="125" r="5" fill="#c0392b"/>
+          <text x="426" y="129" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">Treatment C vs. A</text>
+          <line x1="409" y1="144" x2="425" y2="144" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4,2" opacity="0.6"/>
+          <text x="430" y="148" font-family="Source Serif 4,serif" font-size="10" fill="#666">Cond. PA d_AC = −3</text>
+          <!-- Region labels -->
+          <text x="140" y="95" font-family="JetBrains Mono,monospace" font-size="10" fill="#1a6b6b">C better</text>
+          <text x="380" y="95" font-family="JetBrains Mono,monospace" font-size="10" fill="#c0392b">B better</text>
+          <line x1="200" y1="70" x2="200" y2="260" stroke="#b8860b" stroke-width="1" stroke-dasharray="3,3"/>
+        </svg>
+      </div>
+      <div class="figure-caption">
+        <strong>Figure 1.</strong> Individual-level log odds ratios γ<sub>AB</sub>(x) (teal) and γ<sub>AC</sub>(x) (red) for treatments B and C vs. A, across the covariate distribution. The curves cross at x = −0.5 (gold dot). Dashed horizontals show population-average conditional effects. For x &lt; −0.5 (25% of the population), C is individually superior; for x ≥ −0.5 (75%), B is individually superior — yet the marginal estimand favours C overall. Adapted from Phillippo et al. (2025), Figure 1.
+      </div>
+    </div>
+
+    <p>The numerical result is stark: the population-average <strong>conditional</strong> estimand gives d<sub>AB</sub> = −4 and d<sub>AC</sub> = −3, making <strong>B the better treatment</strong>. The population-average <strong>marginal</strong> estimand gives Δ<sub>AB</sub> = −2.36 and Δ<sub>AC</sub> = −2.49, making <strong>C the better treatment</strong>.<span class="cite">[4]</span></p>
+
+    <div class="callout">
+      <div class="callout-label">The Painful Trade-off</div>
+      <p>Choosing <strong>C</strong> (based on marginal effects) minimises the total number of events, but 75% of the population would do better on B. Choosing <strong>B</strong> (based on conditional effects) maximises individual average benefit, but results in <em>more</em> events overall. There is no treatment that simultaneously satisfies both decision criteria.</p>
+    </div>
+
+    <!-- SECTION 4 -->
+    <h2 id="s4" data-num="§ 04">Why Marginal Rankings Are Unstable</h2>
+
+    <p>A further complication is that population-average marginal treatment rankings depend not just on effect modifiers, but also on baseline risk and the distribution of purely prognostic factors — neither of which alter individual treatment effects in any way.</p>
+
+    <div class="figure">
+      <div class="figure-body">
+        <svg class="chart-svg" viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Conceptual chart: marginal vs conditional over varying baseline risk -->
+          <line x1="80" y1="240" x2="560" y2="240" stroke="#d4cfc0" stroke-width="1"/>
+          <line x1="80" y1="40" x2="80" y2="240" stroke="#d4cfc0" stroke-width="1"/>
+          <!-- zero line -->
+          <line x1="80" y1="140" x2="560" y2="140" stroke="#888" stroke-width="1" stroke-dasharray="4,4"/>
+          <!-- Conditional effects: FLAT horizontal lines -->
+          <line x1="80" y1="100" x2="560" y2="100" stroke="#1a6b6b" stroke-width="2.5"/>
+          <line x1="80" y1="120" x2="560" y2="120" stroke="#c0392b" stroke-width="2.5"/>
+          <!-- Marginal B: starts below C, crosses and goes further -->
+          <!-- B marginal crosses C marginal around x=320 -->
+          <path d="M80,115 C180,108 250,105 320,112 S460,130 560,148" fill="none" stroke="#1a6b6b" stroke-width="2" stroke-dasharray="7,3"/>
+          <path d="M80,128 C180,118 260,113 320,112 S440,108 560,100" fill="none" stroke="#c0392b" stroke-width="2" stroke-dasharray="7,3"/>
+          <!-- Cross point -->
+          <circle cx="320" cy="112" r="5" fill="#b8860b" stroke="white" stroke-width="1.5"/>
+          <!-- Axis labels -->
+          <text x="320" y="260" font-family="Source Serif 4,serif" font-size="11" fill="#888" text-anchor="middle">Baseline Log Odds μ(P) →</text>
+          <text x="22" y="140" font-family="Source Serif 4,serif" font-size="11" fill="#888" text-anchor="middle" transform="rotate(-90,22,140)">Log Odds Ratio</text>
+          <!-- Legend -->
+          <line x1="370" y1="55" x2="395" y2="55" stroke="#1a6b6b" stroke-width="2.5"/>
+          <text x="400" y="59" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">B — conditional (flat)</text>
+          <line x1="370" y1="75" x2="395" y2="75" stroke="#c0392b" stroke-width="2.5"/>
+          <text x="400" y="79" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">C — conditional (flat)</text>
+          <line x1="370" y1="95" x2="395" y2="95" stroke="#1a6b6b" stroke-width="1.8" stroke-dasharray="6,3"/>
+          <text x="400" y="99" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">B — marginal (varies)</text>
+          <line x1="370" y1="115" x2="395" y2="115" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="6,3"/>
+          <text x="400" y="119" font-family="Source Serif 4,serif" font-size="11" fill="#1a1a2e">C — marginal (varies)</text>
+          <text x="92" y="172" font-family="JetBrains Mono,monospace" font-size="9" fill="#c0392b">C marginal</text>
+          <text x="92" y="184" font-family="JetBrains Mono,monospace" font-size="9" fill="#c0392b">better here</text>
+          <text x="450" y="90" font-family="JetBrains Mono,monospace" font-size="9" fill="#1a6b6b">B marginal</text>
+          <text x="450" y="102" font-family="JetBrains Mono,monospace" font-size="9" fill="#1a6b6b">better here</text>
+          <text x="292" y="104" font-family="JetBrains Mono,monospace" font-size="9" fill="#b8860b">rank</text>
+          <text x="292" y="116" font-family="JetBrains Mono,monospace" font-size="9" fill="#b8860b">switch</text>
+        </svg>
+      </div>
+      <div class="figure-caption">
+        <strong>Figure 2.</strong> Population-average conditional (solid) and marginal (dashed) log odds ratios for treatments B and C vs. A, across a range of baseline risk values. Conditional effects are constant — they depend only on effect modifier distribution. Marginal effects shift with baseline risk and can change ranks (gold dot). Adapted from Phillippo et al. (2025), Figure 2.
+      </div>
+    </div>
+
+    <p>This is a striking finding with direct implications for HTA submissions. A marginal treatment effect estimate derived from a trial population — say from MAIC or STC — cannot be transported to a different target population with a different baseline risk, even if all covariate means are identical. The marginal estimate is fundamentally population-specific in a way that the conditional estimate is not.</p>
+
+    <div class="callout callout-gold">
+      <div class="callout-label">HTA Implication</div>
+      <p>MAIC and STC produce marginal estimates that are specific to the aggregate study population. Applying these to a NICE decision target population with different background event rates may give numerically different — and potentially differently-ranked — results. This is not bias in the statistical sense; it is the correct answer to the wrong question.</p>
+    </div>
+
+    <!-- SECTION 5 -->
+    <h2 id="s5" data-num="§ 05">Survival Outcomes: An Even More Complex Picture</h2>
+
+    <p>For time-to-event outcomes analysed with proportional hazards models, the issues compound. Hazard ratios are non-collapsible, and the population-average marginal hazard ratio is not only population-specific — it is also <strong>time-varying</strong>.</p>
+
+    <p>Even if individual-level conditional hazard ratios are perfectly constant over time (i.e., proportional hazards holds at the individual level), the marginal hazard ratio will vary over time whenever any covariate — prognostic or effect-modifying — is present in the model. This is a mathematical inevitability, not a modelling failure.</p>
+
+    <div class="callout callout-teal">
+      <div class="callout-label">For Survival Analysts</div>
+      <p>When covariates are present, proportional hazards <em>cannot</em> hold at the marginal level. The common practice of applying a single constant hazard ratio to a baseline survival curve in a Markov model is therefore an approximation that ignores this fundamental property. When effect modification is additionally present, marginal hazard curves from different treatments can cross over time — producing different treatment rankings at different time horizons.</p>
+    </div>
+
+    <p>The population-average conditional log hazard ratio remains constant over time, depending only on the distribution of effect-modifying covariates. This makes it a more tractable and transportable quantity for economic modelling, provided the right decision question is being answered.</p>
+
+    <!-- SECTION 6 -->
+    <h2 id="s6" data-num="§ 06">Comparing the Methods: What Can Each Produce?</h2>
+
+    <p>Different population-adjustment methods target different estimands and are applicable to different target populations. Understanding these distinctions is essential for selecting the right method for any given HTA problem.</p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Estimand</th>
+          <th>Target Population</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Standard NMA / Indirect comparison</strong></td>
+          <td><span class="tag tag-marg">Marginal</span></td>
+          <td>Average of included studies</td>
+        </tr>
+        <tr>
+          <td><strong>IPD network meta-regression</strong></td>
+          <td><span class="tag tag-both">Conditional or Marginal</span></td>
+          <td><span class="tag tag-any">Any</span></td>
+        </tr>
+        <tr>
+          <td><strong>ML-NMR</strong></td>
+          <td><span class="tag tag-both">Conditional or Marginal</span></td>
+          <td><span class="tag tag-any">Any</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAIC</strong></td>
+          <td><span class="tag tag-marg">Marginal</span></td>
+          <td>Single aggregate study</td>
+        </tr>
+        <tr>
+          <td><strong>STC (plug-in means)</strong></td>
+          <td><span class="tag tag-neither">Neither (biased)</span></td>
+          <td>Single aggregate study</td>
+        </tr>
+        <tr>
+          <td><strong>STC (simulation / G-computation)</strong></td>
+          <td><span class="tag tag-marg">Marginal</span></td>
+          <td>Single aggregate study</td>
+        </tr>
+        <tr>
+          <td><strong>Network meta-interpolation (NMI)</strong></td>
+          <td><span class="tag tag-neither">Neither (biased)</span></td>
+          <td>Any (with bias)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The critical limitation for MAIC, STC, and standard NMA is that they can only produce marginal estimates — and only for a specific study population. This means they cannot provide the conditional estimates needed to diagnose whether a rank conflict exists, nor produce estimates relevant to a different decision target population.</p>
+
+    <p><strong>ML-NMR is the only currently available population-adjustment method that can produce both conditional and marginal estimates in any target population of interest.</strong><span class="cite">[5]</span> It does this by combining individual-level conditional modelling (producing conditional estimands directly) with marginalisation over the target population covariate distribution (producing marginal estimands).</p>
+
+    <!-- SECTION 7 -->
+    <h2 id="s7" data-num="§ 07">A Pragmatic Framework for Decision-Making</h2>
+
+    <p>Phillippo et al. do not argue that one estimand is universally superior. Instead, they offer a pragmatic framework for navigating the conflict when it arises.</p>
+
+    <div class="decision-flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <h4>Pre-specify the target population and estimand</h4>
+          <p>In line with NICE TSD 18 and the NICE HTE Manual, the choice of effect modifiers, target population, and estimand type should be pre-specified with clinical justification — not selected post-hoc to favour a particular outcome.</p>
+        </div>
+      </div>
+      <div class="flow-step teal">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <h4>Use ML-NMR to produce both conditional and marginal estimates</h4>
+          <p>ML-NMR is the only method that can produce both in any target population. This is a prerequisite for the diagnostic step that follows.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <h4>Check for rank conflict between estimands</h4>
+          <p>If rankings agree: no substantial conflict. A single treatment decision is defensible for the whole population. If rankings disagree: the two decision questions are irreconcilable with a single population-level decision.</p>
+        </div>
+      </div>
+      <div class="flow-step accent">
+        <div class="flow-num">4</div>
+        <div class="flow-content">
+          <h4>Consider subgroup decisions when conflict is present</h4>
+          <p>Identify the key effect modifier(s) driving the rank reversal. Plot individual treatment effects against each covariate, holding others at population means. Select clinically meaningful cut-points. Verify that subgroup-specific conditional and marginal rankings agree within each subgroup.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-content">
+          <h4>For cost-effectiveness: integrate net benefit over the population</h4>
+          <p>Markov models and decision trees based on average event probabilities do not account for patient heterogeneity. When effect modification is present, a discrete event simulation that constructs net benefit as a function of individual event probabilities is the theoretically correct approach, even if less commonly implemented.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>One important clarification: the choice of a subgroup decision strategy is non-trivial. Subgroup analyses have limited power to detect interactions, carry a risk of spurious findings when many candidates are explored, and reduce precision within subgroups. The authors appropriately note these caveats while still advocating for the diagnostic use of rank conflict as a signal that subgroup decisions may be worth pursuing.</p>
+
+    <!-- SECTION 8 -->
+    <h2 id="s8" data-num="§ 08">What This Means for NICE Submissions</h2>
+
+    <p>The practical implications for HTA practitioners submitting to NICE — or advising on such submissions — are considerable.</p>
+
+    <p><strong>For sponsors:</strong> If your submission includes an indirect comparison or population-adjusted estimate using MAIC or STC, you are limited to marginal estimates in the aggregate study population. This means you cannot diagnose whether a rank conflict exists, and your estimates may not be transportable to the NICE decision population. ML-NMR, where feasible, offers substantially more analytical flexibility.</p>
+
+    <p><strong>For assessors:</strong> When reviewing population-adjusted submissions, it is worth asking whether the submitted estimates are relevant to the NHS target population — not just the population of the comparator trial. Marginal estimates from MAIC or STC are not interchangeable across populations with different baseline risks, even if covariate means are similar.</p>
+
+    <p><strong>For economic modellers:</strong> The use of a time-invariant hazard ratio applied to a baseline survival curve is a strong simplifying assumption that may be particularly problematic in the presence of population adjustment. When ML-NMR has been used to estimate individual-level survival curves, these should be used directly in the economic model, rather than being summarised to a single constant hazard ratio.</p>
+
+    <div class="callout callout-teal">
+      <div class="callout-label">Bottom Line for HTA</div>
+      <p>Collapsibility is not a technicality — it is central to whether your treatment effect estimates answer the decision question that a payer or HTA body is actually asking. When effect modification is present (which it frequently is), using the wrong estimand or an estimand from the wrong population can lead to a treatment recommendation that is genuinely suboptimal for patients or for the health system. The field now has the methodological tools, principally ML-NMR, to do better.</p>
+    </div>
+
+    <!-- REFERENCES -->
+    <h2 id="refs" data-num="Refs">References</h2>
+
+    <ol class="ref-list">
+      <li>Greenland S, Pearl J, Robins JM. Confounding and collapsibility in causal inference. <em>Stat Sci.</em> 1999;14(1):29–46.</li>
+      <li>Neuhaus JM, Jewell NP. A geometric approach to assess bias due to omitted covariates in generalised linear models. <em>Biometrika.</em> 1993;80(4):807–815.</li>
+      <li>Daniel R, Zhang J, Farewell D. Making apples from oranges: comparing noncollapsible effect estimators and their standard errors after adjustment for different covariate sets. <em>Biom J.</em> 2021;63(3):528–557.</li>
+      <li>Phillippo DM, Remiro-Azócar A, Heath A, Baio G, Dias S, Ades AE, Welton NJ. Effect modification and non-collapsibility together may lead to conflicting treatment decisions: a review of marginal and conditional estimands and recommendations for decision-making. <em>Res Synth Methods.</em> 2025;16:323–349. doi:10.1017/rsm.2025.2</li>
+      <li>Phillippo DM, Dias S, Ades AE, et al. Multilevel network meta-regression for population-adjusted treatment comparisons. <em>J R Stat Soc Ser A.</em> 2020;183(3):1189–1210.</li>
+      <li>Phillippo DM, Ades AE, Dias S, Palmer S, Abrams KR, Welton NJ. Technical Support Document 18: Methods for Population-Adjusted Indirect Comparisons in Submission to NICE. NICE DSU; 2016.</li>
+      <li>Signorovitch JE, Wu EQ, Yu AP, et al. Comparative effectiveness without head-to-head trials: matching-adjusted indirect comparisons. <em>Pharmacoeconomics.</em> 2010;28(10):935–945.</li>
+      <li>Remiro-Azócar A, Heath A, Baio G. Parametric G-computation for compatible indirect treatment comparisons with limited individual patient data. <em>Res Synth Methods.</em> 2022;13(6):716–744.</li>
+      <li>Welton NJ, Soares MO, Palmer S, et al. Accounting for heterogeneity in relative treatment effects for use in cost-effectiveness models and value-of-information analyses. <em>Med Decis Making.</em> 2015;35(5):608–621.</li>
+      <li>National Institute for Health and Care Excellence. <em>NICE Health Technology Evaluations: The Manual.</em> NICE; 2022.</li>
+    </ol>
+
+  </article>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <h4>Contents</h4>
+      <ul class="toc-list">
+        <li><a href="#s1"><span class="toc-num">01</span> What is Non-Collapsibility?</a></li>
+        <li><a href="#s2"><span class="toc-num">02</span> Two Estimands, Two Questions</a></li>
+        <li><a href="#s3"><span class="toc-num">03</span> When Rankings Diverge</a></li>
+        <li><a href="#s4"><span class="toc-num">04</span> Marginal Rankings Are Unstable</a></li>
+        <li><a href="#s5"><span class="toc-num">05</span> Survival Outcomes</a></li>
+        <li><a href="#s6"><span class="toc-num">06</span> Methods Comparison</a></li>
+        <li><a href="#s7"><span class="toc-num">07</span> Decision Framework</a></li>
+        <li><a href="#s8"><span class="toc-num">08</span> NICE Implications</a></li>
+        <li><a href="#refs"><span class="toc-num">—</span> References</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>Key Terms</h4>
+      <div class="key-term">
+        <div class="key-dot key-dot-teal"></div>
+        <div>
+          <strong>Conditional Estimand</strong>
+          <span>Average treatment effect on the linear predictor scale. Answers: best treatment per individual on average? Stable to baseline risk.</span>
+        </div>
+      </div>
+      <div class="key-term">
+        <div class="key-dot key-dot-red"></div>
+        <div>
+          <strong>Marginal Estimand</strong>
+          <span>Comparison of average event probabilities. Answers: which treatment minimises overall events? Population-specific.</span>
+        </div>
+      </div>
+      <div class="key-term">
+        <div class="key-dot key-dot-gold"></div>
+        <div>
+          <strong>Non-Collapsibility</strong>
+          <span>Property where marginal effects ≠ weighted average of conditional effects. Occurs with logit, probit, log-hazard links.</span>
+        </div>
+      </div>
+      <div class="key-term">
+        <div class="key-dot key-dot-teal"></div>
+        <div>
+          <strong>ML-NMR</strong>
+          <span>Multilevel network meta-regression. Currently the only method producing both conditional and marginal estimates in any target population.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <h4>Source Paper</h4>
+      <p style="font-size:0.82rem;line-height:1.55;color:var(--ink-light);margin-bottom:10px;">
+        Phillippo DM, Remiro-Azócar A, Heath A, et al.
+        <em>Research Synthesis Methods.</em> 2025;16:323–349.
+      </p>
+      <p style="font-size:0.78rem;line-height:1.5;color:#aaa;">
+        Open Access · CC BY 4.0<br>
+        doi:10.1017/rsm.2025.2
+      </p>
+    </div>
+
+    <div class="sidebar-card" style="border-color:var(--accent);background:var(--accent-muted);">
+      <h4 style="color:var(--accent-dark);">Watch Out For</h4>
+      <ul style="font-size:0.82rem;line-height:1.6;color:var(--ink-light);padding-left:16px;">
+        <li style="margin-bottom:6px;">MAIC/STC estimates applied to a different baseline risk distribution</li>
+        <li style="margin-bottom:6px;">Constant HR assumption in Markov models when covariates are present</li>
+        <li style="margin-bottom:6px;">Plug-in means STC — produces neither conditional nor marginal estimates correctly</li>
+        <li>Rank conflict between conditional and marginal estimates going undiagnosed</li>
+      </ul>
+    </div>
+
+  </aside>
+</div>
+
+<footer>
+  <p>HTA Methods &amp; Evidence Synthesis Blog · Views represent methodological commentary, not official guidance · <a href="https://doi.org/10.1017/rsm.2025.2">Phillippo et al. 2025 (doi:10.1017/rsm.2025.2)</a></p>
+</footer>
+
+</body>
+</html>

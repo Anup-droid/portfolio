@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Blog | Anup Kumar</title>
+    <meta name="description" content="Methods blog by Anup Kumar on Evidence Synthesis, NMA, MAIC, STC, and MLNMR.">
+    <meta name="author" content="Anup Kumar">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="assets/avatar.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Blog-specific styles */
+        .blog-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .blog-post-card {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 1.75rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border-color);
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s ease;
+        }
+
+        .blog-post-card:first-child {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .blog-post-card:hover .blog-post-title {
+            color: var(--accent-teal);
+        }
+
+        .blog-post-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 0.25rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .date-month {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+            color: var(--accent-teal);
+        }
+
+        .date-year {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+            letter-spacing: 0.04em;
+        }
+
+        .blog-post-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .blog-post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .blog-tag {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            color: var(--accent-teal);
+            background: var(--accent-teal-light);
+            padding: 0.15rem 0.55rem;
+            border-radius: 3px;
+        }
+
+        .blog-post-title {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.35;
+            transition: color 0.2s ease;
+        }
+
+        .blog-post-excerpt {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .blog-post-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .blog-post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .blog-read-more {
+            color: var(--accent-teal);
+            font-size: 0.82rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.25rem;
+            text-decoration: none;
+            transition: gap 0.2s ease;
+        }
+
+        .blog-post-card:hover .blog-read-more {
+            gap: 0.55rem;
+        }
+
+        .blog-section-intro {
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            font-size: 1.05rem;
+        }
+
+        @media (max-width: 600px) {
+            .blog-post-card {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .blog-post-date {
+                flex-direction: row;
+                gap: 0.5rem;
+                justify-content: flex-start;
+                align-items: center;
+            }
+
+            .date-year::before {
+                content: '·';
+                margin-right: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-container">
+        
+        <!-- SITE HEADER / NAVIGATION -->
+        <header class="site-header" role="banner">
+            <nav class="site-nav" role="navigation">
+                <a class="site-brand" href="index.html" title="Home">
+                    <span>Anup Kumar</span>
+                </a>
+                <div class="site-links">
+                    <a class="link" href="index.html" title="About me">About</a>
+                    <a class="link" href="interests.html" title="Interest Areas">Interests</a>
+                    <a class="link active" href="blog.html" title="Blog">Blog</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- MAIN BODY CONTENT -->
+        <main class="page-main" role="main">
+            <section class="page-content">
+                <div class="page-body">
+                    
+                    <!-- SIDEBAR -->
+                    <aside class="about-sidebar" id="profile">
+                        <div class="avatar-container">
+                            <img src="assets/avatar.jpg" class="avatar" alt="avatar" id="profile-img">
+                        </div>
+                        
+                        <h2 class="profile-name">Anup Kumar</h2>
+                        <h5 class="profile-title">Manager – Evidence Synthesis</h5>
+                        
+                        <div class="profile-org">
+                            <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+                            <span>Novartis</span>
+                        </div>
+                        
+                        <div class="profile-location">
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            <span>Hyderabad, India</span>
+                        </div>
+                        
+                        <div class="site-social-links">
+                            <div class="social-icon-links" aria-hidden="true">
+                                <a class="social-icon-link" href="https://www.linkedin.com/in/anup-kumar-198a3112a/" title="linkedin" target="_blank" rel="me noopener">
+                                    <i class="fab fa-linkedin fa-lg fa-fw"></i>
+                                </a>
+                                <a class="social-icon-link" href="https://github.com/Anup-droid" title="github" target="_blank" rel="me noopener">
+                                    <i class="fab fa-github fa-lg fa-fw"></i>
+                                </a>
+                                <a class="social-icon-link" href="mailto:anupkum9122@gmail.com" title="email" rel="me noopener">
+                                    <i class="fas fa-envelope fa-lg fa-fw"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- BLOG CONTENT -->
+                    <div class="page-content-main">
+                        
+                        <section id="blog-section">
+                            <h1 class="hero-greeting">Blog</h1>
+                            <p class="blog-section-intro">
+                                Methods notes and commentary on Evidence Synthesis, HTA statistics, and R programming.
+                            </p>
+
+                            <div class="blog-list">
+
+                                <!-- Post 1: Collapsibility -->
+                                <a class="blog-post-card" href="collapsibility-blog.html">
+                                    <div class="blog-post-date">
+                                        <span class="date-month">Jun</span>
+                                        <span class="date-year">2025</span>
+                                    </div>
+                                    <div class="blog-post-body">
+                                        <div class="blog-post-tags">
+                                            <span class="blog-tag">NMA</span>
+                                            <span class="blog-tag">MLNMR</span>
+                                            <span class="blog-tag">Estimands</span>
+                                            <span class="blog-tag">HTA</span>
+                                        </div>
+                                        <h2 class="blog-post-title">Why Collapsibility Is the Hidden Fault Line in Indirect Treatment Comparisons</h2>
+                                        <p class="blog-post-excerpt">
+                                            Non-collapsible effect measures like odds ratios and hazard ratios are standard in HTA submissions. But when effect modification enters the picture, marginal and conditional estimates can recommend opposite treatments — with neither being wrong. A review of Phillippo et al. (2025).
+                                        </p>
+                                        <div class="blog-post-meta">
+                                            <span><i class="fa-regular fa-clock" aria-hidden="true"></i> ~12 min read</span>
+                                            <span><i class="fa-regular fa-file-lines" aria-hidden="true"></i> Methods Commentary</span>
+                                        </div>
+                                        <span class="blog-read-more">Read post <i class="fa-solid fa-arrow-right fa-xs"></i></span>
+                                    </div>
+                                </a>
+
+                            </div>
+                        </section>
+                        
+                    </div>
+                    
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="site-footer" role="contentinfo">
+            <div class="footer-nav">
+                <p class="site-copyright">
+                    &copy; 2026 Anup Kumar.
+                    <span class="middot-divider"></span>
+                    Based on <a href="https://github.com/hugo-apero/" target="_blank" rel="noopener">Hugo Apéro</a> templates.
+                </p>
+                <div class="footer-links">
+                    <span>Hyderabad, India</span>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+</body>
+</html>

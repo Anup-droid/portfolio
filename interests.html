@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Optimization -->
+    <title>Interests | Anup Kumar</title>
+    <meta name="description" content="Core professional interests of Anup Kumar, Manager – Evidence Synthesis at Novartis. Specializing in ITC, NMA, MAIC, STC, and MLNMR.">
+    <meta name="author" content="Anup Kumar">
+    <meta name="keywords" content="Anup Kumar, Novartis, Biostatistician, ITC, NMA, Bayesian NMA, MAIC, STC, Meta-regression, MLNMR, IIPS Mumbai, R programming, Shiny, Demography">
+    
+    <!-- Open Graph Metadata -->
+    <meta property="og:title" content="Interests | Anup Kumar">
+    <meta property="og:description" content="Explore the core interest areas of Anup Kumar in Evidence Synthesis, Network Meta-Analysis, Population Adjustments, and Advanced Regression.">
+    <meta property="og:image" content="assets/avatar.jpg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/Anup-droid">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="assets/avatar.jpg" type="image/x-icon">
+    
+    <!-- Styling -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="grid-container">
+        
+        <!-- SITE HEADER / NAVIGATION -->
+        <header class="site-header" role="banner">
+            <nav class="site-nav" role="navigation">
+                <a class="site-brand" href="index.html" title="Home">
+                    <span>Anup Kumar</span>
+                </a>
+                <div class="site-links">
+                    <a class="link" href="index.html" title="About me">About</a>
+                    <a class="link active" href="interests.html" title="Interest Areas">Interests</a>
+                    <a class="link" href="blog.html" title="Blog">Blog</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- MAIN BODY CONTENT -->
+        <main class="page-main" role="main">
+            <section class="page-content">
+                <div class="page-body">
+                    
+                    <!-- SIDEBAR (Left on desktop) -->
+                    <aside class="about-sidebar" id="profile">
+                        <div class="avatar-container">
+                            <img src="assets/avatar.jpg" class="avatar" alt="avatar" id="profile-img">
+                        </div>
+                        
+                        <h2 class="profile-name">Anup Kumar</h2>
+                        <h5 class="profile-title">Manager – Evidence Synthesis</h5>
+                        
+                        <div class="profile-org">
+                            <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+                            <span>Novartis</span>
+                        </div>
+                        
+                        <div class="profile-location">
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            <span>Hyderabad, India</span>
+                        </div>
+                        
+                        <!-- Simple Spaced Icons like Julia Silge's page -->
+                        <div class="site-social-links">
+                            <div class="social-icon-links" aria-hidden="true">
+                                <a class="social-icon-link" href="https://www.linkedin.com/in/anup-kumar-198a3112a/" title="linkedin" target="_blank" rel="me noopener" id="linkedin-link">
+                                    <i class="fab fa-linkedin fa-lg fa-fw"></i>
+                                </a>
+                                <a class="social-icon-link" href="https://github.com/Anup-droid" title="github" target="_blank" rel="me noopener" id="github-link">
+                                    <i class="fab fa-github fa-lg fa-fw"></i>
+                                </a>
+                                <a class="social-icon-link" href="mailto:anup.kumar.demography@gmail.com" title="email" rel="me noopener" id="email-link">
+                                    <i class="fas fa-envelope fa-lg fa-fw"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- INTERESTS CONTENT (Right on desktop) -->
+                    <div class="page-content-main">
+                        
+                        <!-- INTERESTS SECTION -->
+                        <section id="interests-section">
+                            <h1 class="hero-greeting">My Areas of Interest</h1>
+                            <p style="color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 1.05rem;">
+                                My work sits at the intersection of statistical methodology and Health Technology Assessment — from structuring the evidence base through to informing payer submissions and reimbursement decisions.
+                            </p>
+                            
+                            <div class="interests-grid">
+                                
+                                <div class="interest-card" id="card-slr">
+                                    <div class="interest-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                                    <h3 class="interest-title">Systematic Literature Reviews</h3>
+                                    <p class="interest-desc">Designing and executing SLRs to identify, screen, and extract evidence from clinical trials and observational studies — the evidence base underpinning all downstream ITC and HTA analyses.</p>
+                                </div>
+
+                                <div class="interest-card" id="card-itc">
+                                    <div class="interest-icon"><i class="fa-solid fa-code-compare"></i></div>
+                                    <h3 class="interest-title">Indirect Treatment Comparisons (ITC)</h3>
+                                    <p class="interest-desc">Leading ITC projects — from protocol development and feasibility assessment to final analysis — generating comparative evidence where head-to-head trials are absent, for global HTA submissions and payer negotiations.</p>
+                                </div>
+                                
+                                <div class="interest-card" id="card-nma">
+                                    <div class="interest-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                                    <h3 class="interest-title">Network Meta-Analysis (NMA)</h3>
+                                    <p class="interest-desc">Building frequentist and Bayesian NMA models to simultaneously rank multiple treatments using both direct and indirect evidence, with full heterogeneity and inconsistency diagnostics.</p>
+                                </div>
+                                
+                                <div class="interest-card" id="card-adjustment">
+                                    <div class="interest-icon"><i class="fa-solid fa-users-viewfinder"></i></div>
+                                    <h3 class="interest-title">Population-Adjusted Comparisons</h3>
+                                    <p class="interest-desc">Applying MAIC, STC (G-computation), and ML-NMR to bridge between trial populations and HTA decision target populations, using individual patient data (IPD) to align with aggregate comparator data.</p>
+                                </div>
+
+                                <div class="interest-card" id="card-survival">
+                                    <div class="interest-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                    <h3 class="interest-title">Survival Analysis &amp; Extrapolation</h3>
+                                    <p class="interest-desc">Fitting parametric and flexible survival models to immature trial data for long-term extrapolation, incorporating external registry or RWE sources using Bayesian informative priors — a key input to cost-effectiveness models in oncology and rare disease HTA.</p>
+                                </div>
+                                
+                                <div class="interest-card" id="card-advanced-reg">
+                                    <div class="interest-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+                                    <h3 class="interest-title">Meta-regression &amp; ML-NMR</h3>
+                                    <p class="interest-desc">Applying meta-regression and Multilevel Network Meta-Regression (ML-NMR) in R to resolve heterogeneity across trials, account for patient-level effect modifiers, and produce both conditional and marginal treatment estimates in any target population.</p>
+                                </div>
+                                
+                            </div>
+                        </section>
+                        
+                    </div>
+                    
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="site-footer" role="contentinfo">
+            <div class="footer-nav">
+                <p class="site-copyright">
+                    &copy; 2026 Anup Kumar.
+                    <span class="middot-divider"></span>
+                    Based on <a href="https://github.com/hugo-apero/" target="_blank" rel="noopener">Hugo Apéro</a> templates.
+                </p>
+                <div class="footer-links">
+                    <span>Hyderabad, India</span>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+</body>
+</html>
