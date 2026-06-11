@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indirect Treatment Comparisons: Weighting, Extrapolation & Doubly-Robust Methods</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0F1E3C;
+      --slate:   #1E3A5F;
+      --teal:    #00BFA6;
+      --teal-lt: #E0F7F4;
+      --amber:   #F5A623;
+      --amber-lt:#FEF3DC;
+      --red:     #E84855;
+      --red-lt:  #FDE8EA;
+      --white:   #F7F9FC;
+      --gray-50: #E8EDF4;
+      --gray-200:#C4CEDC;
+      --gray-500:#6B7A93;
+      --gray-700:#374559;
+      --ink:     #1A2840;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy);
+      color: #fff;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      min-height: 520px;
+      max-width: 1200px;
+      margin: 0 auto;
+      align-items: center;
+      gap: 48px;
+      padding: 64px 48px;
+    }
+    .hero-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+    .hero h1 em { color: var(--teal); font-style: normal; }
+    .hero-sub {
+      font-size: 16px;
+      color: rgba(255,255,255,0.72);
+      max-width: 540px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-meta span {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+    }
+    .hero-meta strong { color: rgba(255,255,255,0.85); }
+
+    /* Hero visual — method spectrum diagram */
+    .hero-visual {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+    .hero-visual-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--teal);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* ── NAV ── */
+    .toc-bar {
+      background: var(--slate);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid var(--teal);
+    }
+    .toc-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+    .toc-inner a {
+      display: block;
+      padding: 14px 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 0.2s, border-bottom 0.2s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .toc-inner a:hover { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* ── LAYOUT ── */
+    .content-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 72px 48px;
+    }
+    @media (max-width: 700px) {
+      .hero-grid { grid-template-columns: 1fr; padding: 40px 24px; }
+      .hero-visual { display: none; }
+      .content-wrap { padding: 40px 24px; }
+      .toc-inner { padding: 0 16px; }
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 10px;
+    }
+    h2.section-title {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+    h3 {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--slate);
+      margin: 36px 0 14px;
+    }
+    p { margin-bottom: 20px; color: var(--gray-700); font-size: 16px; }
+    p:last-child { margin-bottom: 0; }
+    section { margin-bottom: 72px; }
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--gray-200);
+      margin: 64px 0;
+    }
+
+    /* ── CALLOUT BOXES ── */
+    .callout {
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin: 32px 0;
+      position: relative;
+    }
+    .callout-teal {
+      background: var(--teal-lt);
+      border-left: 4px solid var(--teal);
+    }
+    .callout-amber {
+      background: var(--amber-lt);
+      border-left: 4px solid var(--amber);
+    }
+    .callout-red {
+      background: var(--red-lt);
+      border-left: 4px solid var(--red);
+    }
+    .callout-navy {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+    }
+    .callout-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .callout-teal .callout-label  { color: var(--teal); }
+    .callout-amber .callout-label { color: #b5741a; }
+    .callout-red .callout-label   { color: var(--red); }
+    .callout-navy .callout-label  { color: var(--teal); }
+    .callout p { font-size: 15px; margin-bottom: 0; }
+    .callout-navy p { color: rgba(255,255,255,0.82); }
+    .callout strong { color: var(--navy); }
+    .callout-navy strong { color: #fff; }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote {
+      border-top: 3px solid var(--teal);
+      border-bottom: 3px solid var(--teal);
+      padding: 28px 0;
+      margin: 40px 0;
+    }
+    .pull-quote p {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: clamp(18px, 2.5vw, 22px);
+      font-style: italic;
+      color: var(--navy);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .pull-quote cite {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gray-500);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── SVG DIAGRAMS ── */
+    .diagram-wrap {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 36px 0;
+      overflow-x: auto;
+    }
+    .diagram-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    svg text { font-family: 'Inter', sans-serif; }
+
+    /* ── METHOD CARDS ── */
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      margin: 32px 0;
+    }
+    .method-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 24px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .method-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .method-card-tag {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .tag-teal { background: var(--teal-lt); color: #007A6B; }
+    .tag-amber { background: var(--amber-lt); color: #8C5E0A; }
+    .tag-red { background: var(--red-lt); color: #b52230; }
+    .tag-navy { background: #E6EAF2; color: var(--navy); }
+    .method-card h4 {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+    .method-card p { font-size: 14px; color: var(--gray-500); margin-bottom: 14px; }
+    .verdict {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+    .verdict-good { color: #007A6B; }
+    .verdict-caution { color: #8C5E0A; }
+    .verdict-risk { color: #b52230; }
+
+    /* ── BIAS TABLE ── */
+    .bias-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 28px 0;
+      font-size: 14px;
+    }
+    .bias-table th {
+      background: var(--navy);
+      color: rgba(255,255,255,0.9);
+      padding: 12px 16px;
+      text-align: left;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .bias-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-200);
+      vertical-align: top;
+    }
+    .bias-table tr:last-child td { border-bottom: none; }
+    .bias-table tr:nth-child(even) td { background: var(--gray-50); }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .dot-green { background: var(--teal); }
+    .dot-amber { background: var(--amber); }
+    .dot-red   { background: var(--red); }
+
+    /* ── INTRO ── */
+    .intro-text {
+      font-family: 'IBM Plex Serif', serif;
+      font-size: 19px;
+      line-height: 1.75;
+      color: var(--navy);
+      margin-bottom: 36px;
+      border-left: 3px solid var(--teal);
+      padding-left: 24px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.55);
+      padding: 48px;
+      text-align: center;
+    }
+    footer p { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+    footer a { color: var(--teal); text-decoration: none; }
+
+    /* ── STEP LIST ── */
+    .step-list { list-style: none; margin: 24px 0; }
+    .step-list li {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      background: var(--navy);
+      color: var(--teal);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .step-list li p { margin-bottom: 0; font-size: 15px; }
+
+    /* ── OVERLAP SPECTRUM ── */
+    .spectrum-bar {
+      position: relative;
+      height: 56px;
+      border-radius: 28px;
+      background: linear-gradient(90deg, #E84855 0%, #F5A623 45%, #00BFA6 100%);
+      margin: 28px 0 12px;
+      overflow: visible;
+    }
+    .spectrum-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-bottom: 32px;
+    }
+    .spectrum-markers {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+    }
+    .sp-marker {
+      background: rgba(255,255,255,0.9);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--navy);
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    ul.prose-list { padding-left: 20px; margin: 16px 0 20px; }
+    ul.prose-list li { margin-bottom: 8px; color: var(--gray-700); font-size: 15px; }
+    ul.prose-list li strong { color: var(--navy); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<header class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Health Technology Assessment · Statistical Methods · 2023</div>
+      <h1>Choosing Your Weapon:<br/><em>Weighting, Extrapolation &amp; Doubly-Robust</em> Methods in Indirect Treatment Comparisons</h1>
+      <p class="hero-sub">When two drugs have never been trialled against each other, HTA statisticians must bridge evidence from separate studies. But which methodology should you trust — and when? A deep dive into the methodological debate that every health economist needs to understand.</p>
+      <div class="hero-meta">
+        <span>Based on · <strong>Remiro-Azócar, Heath &amp; Baio (2023)</strong></span>
+        <span>Journal · <strong>Research Synthesis Methods</strong></span>
+        <span>Topic · <strong>MAIC · G-computation · Doubly-Robust</strong></span>
+      </div>
+    </div>
+
+    <!-- Hero diagram: spectrum of methods -->
+    <div class="hero-visual">
+      <div class="hero-visual-title">Method Trade-off Spectrum</div>
+      <svg viewBox="0 0 360 300" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Method trade-off spectrum diagram">
+        <!-- Axes labels -->
+        <text x="10" y="16" font-size="9" fill="rgba(255,255,255,0.45)" font-family="IBM Plex Mono, monospace" letter-spacing="1">BIAS ROBUSTNESS</text>
+        <text x="10" y="30" font-size="9" fill="rgba(255,255,255,0.45)" font-family="IBM Plex Mono, monospace" letter-spacing="1">vs. PRECISION</text>
+
+        <!-- Axis lines -->
+        <line x1="30" y1="50" x2="30" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+        <line x1="30" y1="270" x2="340" y2="270" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+
+        <!-- Y axis label -->
+        <text x="14" y="165" font-size="8" fill="rgba(255,255,255,0.4)" font-family="IBM Plex Mono, monospace" transform="rotate(-90,14,165)">PRECISION</text>
+        <!-- X axis label -->
+        <text x="170" y="290" font-size="8" fill="rgba(255,255,255,0.4)" font-family="IBM Plex Mono, monospace" text-anchor="middle">BIAS ROBUSTNESS →</text>
+
+        <!-- Ideal zone -->
+        <ellipse cx="285" cy="80" rx="40" ry="25" fill="rgba(0,191,166,0.08)" stroke="rgba(0,191,166,0.3)" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="285" y="74" font-size="8" fill="rgba(0,191,166,0.7)" text-anchor="middle" font-family="Inter, sans-serif">IDEAL</text>
+        <text x="285" y="85" font-size="7" fill="rgba(0,191,166,0.5)" text-anchor="middle" font-family="Inter, sans-serif">region</text>
+
+        <!-- G-computation point -->
+        <circle cx="100" cy="90" r="18" fill="#1E3A5F" stroke="#F5A623" stroke-width="2"/>
+        <text x="100" y="87" font-size="8" fill="#F5A623" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">G-comp</text>
+        <text x="100" y="98" font-size="7" fill="rgba(255,255,255,0.7)" text-anchor="middle" font-family="Inter, sans-serif">parametric</text>
+
+        <!-- MAIC point -->
+        <circle cx="230" cy="180" r="18" fill="#1E3A5F" stroke="#00BFA6" stroke-width="2"/>
+        <text x="230" y="177" font-size="8" fill="#00BFA6" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">MAIC</text>
+        <text x="230" y="188" font-size="7" fill="rgba(255,255,255,0.7)" text-anchor="middle" font-family="Inter, sans-serif">entropy bal.</text>
+
+        <!-- DR point -->
+        <circle cx="285" cy="105" r="22" fill="#0F1E3C" stroke="rgba(0,191,166,0.8)" stroke-width="2.5"/>
+        <text x="285" y="102" font-size="8" fill="rgba(255,255,255,0.9)" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">Doubly</text>
+        <text x="285" y="113" font-size="8" fill="rgba(255,255,255,0.9)" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">Robust</text>
+
+        <!-- Lines connecting -->
+        <line x1="110" y1="100" x2="218" y2="172" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="245" y1="165" x2="268" y2="122" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- Annotation: precision arrow -->
+        <path d="M50,200 L50,110" stroke="rgba(255,255,255,0.25)" stroke-width="1" marker-end="url(#arrowW)"/>
+        <defs>
+          <marker id="arrowW" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.4)"/>
+          </marker>
+        </defs>
+
+        <!-- Annotation: overlap limitation -->
+        <rect x="46" y="215" width="120" height="36" rx="5" fill="rgba(232,72,85,0.1)" stroke="rgba(232,72,85,0.3)" stroke-width="1"/>
+        <text x="106" y="229" font-size="8" fill="rgba(232,72,85,0.9)" text-anchor="middle" font-family="Inter, sans-serif">Poor overlap:</text>
+        <text x="106" y="241" font-size="8" fill="rgba(232,72,85,0.9)" text-anchor="middle" font-family="Inter, sans-serif">G-comp precision ↑, bias risk ↑</text>
+
+        <!-- Legend -->
+        <circle cx="48" cy="262" r="5" fill="none" stroke="#F5A623" stroke-width="1.5"/>
+        <text x="57" y="266" font-size="8" fill="rgba(255,255,255,0.55)" font-family="Inter, sans-serif">Outcome modeling</text>
+        <circle cx="165" cy="262" r="5" fill="none" stroke="#00BFA6" stroke-width="1.5"/>
+        <text x="174" y="266" font-size="8" fill="rgba(255,255,255,0.55)" font-family="Inter, sans-serif">Weighting</text>
+        <circle cx="250" cy="262" r="5" fill="none" stroke="rgba(0,191,166,0.8)" stroke-width="2"/>
+        <text x="259" y="266" font-size="8" fill="rgba(255,255,255,0.55)" font-family="Inter, sans-serif">DR</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════ STICKY NAV ══════════════════ -->
+<nav class="toc-bar" aria-label="Article sections">
+  <div class="toc-inner">
+    <a href="#background">Background</a>
+    <a href="#bias-robustness">Bias-Robustness</a>
+    <a href="#extrapolation">Extrapolation</a>
+    <a href="#data-adaptive">Data-Adaptive</a>
+    <a href="#doubly-robust">Doubly-Robust</a>
+    <a href="#decision-guide">Decision Guide</a>
+    <a href="#conclusions">Conclusions</a>
+  </div>
+</nav>
+
+<!-- ══════════════════ CONTENT ══════════════════ -->
+<main>
+<div class="content-wrap">
+
+  <!-- INTRO -->
+  <section id="background">
+    <div class="section-label">Setting the Scene</div>
+    <h2 class="section-title">The Indirect Comparison Problem in HTA</h2>
+
+    <p class="intro-text">Imagine two effective oncology drugs — Drug A vs placebo in Trial 1, Drug B vs placebo in Trial 2. The NICE submission requires a head-to-head estimate. But that trial was never run. What do you do?</p>
+
+    <p>This is the foundational challenge of <strong>indirect treatment comparison (ITC)</strong> in Health Technology Assessment. Covariate-adjusted ITCs have become a routine requirement in submissions to NICE, HAS, G-BA and other HTA bodies — but the methodological landscape is contested, evolving, and has real consequences for reimbursement decisions that affect patient access.</p>
+
+    <p>The paper by <strong>Remiro-Azócar, Heath &amp; Baio (2023)</strong> is a scholarly counter-response that clarifies four critical methodological tensions. Rather than declaring a single winner, the authors chart a nuanced map of when each approach performs well, when it fails, and why the debate matters for HTA practice.</p>
+
+    <div class="callout callout-navy">
+      <div class="callout-label">Why This Debate Matters</div>
+      <p>The method you choose in an ITC directly shapes the treatment effect estimate submitted to HTA bodies. A biased estimate — whether from model misspecification or poor extrapolation — can lead to incorrect reimbursement decisions, affecting both patients and healthcare budgets. This is not merely an academic dispute.</p>
+    </div>
+
+    <h3>The Two Core Paradigms</h3>
+    <p>Before diving into the debate, it helps to understand the two main methodological families:</p>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <span class="method-card-tag tag-teal">Weighting</span>
+        <h4>MAIC</h4>
+        <p>Matching-Adjusted Indirect Comparison. Re-weights patients in the trial with individual patient data (IPD) so that their covariate distribution matches the aggregate statistics of the comparator trial. Does <em>not</em> require an outcome model.</p>
+        <div class="verdict verdict-good">✓ Bias-robust · Transparent uncertainty</div>
+      </div>
+      <div class="method-card">
+        <span class="method-card-tag tag-amber">Outcome Modeling</span>
+        <h4>Parametric G-computation</h4>
+        <p>Fits an outcome model (e.g. linear regression) to IPD, then predicts outcomes under each treatment scenario in the target population. Requires correct specification of the outcome-generating model.</p>
+        <div class="verdict verdict-caution">~ Efficient · Extrapolates · Model-dependent</div>
+      </div>
+      <div class="method-card">
+        <span class="method-card-tag tag-navy">Combined</span>
+        <h4>Doubly-Robust Methods</h4>
+        <p>Augmented weighting estimators that incorporate both a trial assignment model and an outcome model. Unbiased if <em>either</em> model is correctly specified — two bites at the apple.</p>
+        <div class="verdict verdict-good">✓ Most bias-robust · Computationally intensive</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- SECTION 1: BIAS-ROBUSTNESS -->
+  <section id="bias-robustness">
+    <div class="section-label">Section 01</div>
+    <h2 class="section-title">Bias-Robustness: The Case for Weighting</h2>
+
+    <p>The most fundamental question any HTA analyst must ask is: <em>if my model is wrong, how wrong will my answer be?</em> This is the question of <strong>bias-robustness</strong>.</p>
+
+    <div class="pull-quote">
+      <p>"In parametric G-computation, bias arising from model misspecification cannot be easily verified in the data. An outcome model that seems approximately correct when fitted to the patient-level data would not necessarily fit well in extrapolated regions."</p>
+      <cite>Remiro-Azócar et al., 2023</cite>
+    </div>
+
+    <h3>Why Outcome Model Misspecification is Hard to Detect</h3>
+    <p>The seductive problem with parametric G-computation is that your model can look excellent in-sample while being dangerously wrong where you need it most — in the non-overlapping region of the covariate space. Standard model diagnostics (AIC, BIC, MSPE, residual plots) all evaluate performance <em>over the observed distribution</em>, not over the target population's distribution. If the two populations have divergent covariate profiles, your model validation is measuring the wrong thing.</p>
+
+    <div class="callout callout-amber">
+      <div class="callout-label">The Diagnostic Blindspot</div>
+      <p>Performance metrics like mean squared prediction error are computed over the <strong>source study's covariate distribution</strong>. When the target population lies in a different region of covariate space, these metrics offer no guarantee of extrapolation validity. A model with excellent in-sample fit can produce severely biased extrapolated predictions.</p>
+    </div>
+
+    <h3>How MAIC's Entropy Balancing Changes the Game</h3>
+    <p>MAIC operates on a fundamentally different principle: instead of modelling the outcome, it directly solves for weights that enforce covariate balance between the source and target studies. This is an <strong>entropy balancing</strong> approach — a convex optimization that is more stable and robust to model specification than conventional inverse probability weighting.</p>
+
+    <!-- BALANCE DIAGRAM -->
+    <div class="diagram-wrap">
+      <div class="diagram-title">How MAIC Achieves Cross-Study Covariate Balance</div>
+      <svg viewBox="0 0 700 240" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing how MAIC achieves covariate balance">
+        <!-- Study A (IPD) -->
+        <rect x="20" y="30" width="180" height="170" rx="12" fill="#E8EDF4" stroke="#C4CEDC" stroke-width="1.5"/>
+        <text x="110" y="54" font-size="12" font-weight="600" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif">Study A (IPD)</text>
+        <text x="110" y="70" font-size="10" fill="#6B7A93" text-anchor="middle" font-family="Inter, sans-serif">Individual patient data</text>
+
+        <!-- Covariate bars study A -->
+        <text x="36" y="96" font-size="9" fill="#374559" font-family="Inter, sans-serif">Age (mean)</text>
+        <rect x="36" y="100" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="36" y="100" width="110" height="10" rx="3" fill="#1E3A5F"/>
+        <text x="36" y="127" font-size="9" fill="#374559" font-family="Inter, sans-serif">ECOG score</text>
+        <rect x="36" y="131" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="36" y="131" width="80" height="10" rx="3" fill="#1E3A5F"/>
+        <text x="36" y="158" font-size="9" fill="#374559" font-family="Inter, sans-serif">Prior lines Rx</text>
+        <rect x="36" y="162" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="36" y="162" width="95" height="10" rx="3" fill="#1E3A5F"/>
+
+        <text x="110" y="195" font-size="9" fill="#6B7A93" text-anchor="middle" font-family="IBM Plex Mono, monospace">BEFORE WEIGHTING</text>
+
+        <!-- Arrow: MAIC optimization -->
+        <rect x="220" y="90" width="120" height="60" rx="10" fill="#0F1E3C"/>
+        <text x="280" y="112" font-size="10" fill="#00BFA6" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">MAIC</text>
+        <text x="280" y="127" font-size="9" fill="rgba(255,255,255,0.75)" text-anchor="middle" font-family="Inter, sans-serif">Entropy balancing</text>
+        <text x="280" y="141" font-size="9" fill="rgba(255,255,255,0.75)" text-anchor="middle" font-family="Inter, sans-serif">Convex optimization</text>
+        <path d="M200,90 Q210,60 220,120" fill="none" stroke="#C4CEDC" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <path d="M340,120 L360,120" fill="none" stroke="#00BFA6" stroke-width="2" marker-end="url(#arrowT)"/>
+        <defs>
+          <marker id="arrowT" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#00BFA6"/>
+          </marker>
+        </defs>
+
+        <!-- Study B (aggregate) -->
+        <rect x="365" y="30" width="160" height="170" rx="12" fill="#E0F7F4" stroke="#00BFA6" stroke-width="1.5"/>
+        <text x="445" y="54" font-size="12" font-weight="600" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif">Study B (AgD)</text>
+        <text x="445" y="70" font-size="10" fill="#6B7A93" text-anchor="middle" font-family="Inter, sans-serif">Published summary stats</text>
+        <text x="381" y="96" font-size="9" fill="#374559" font-family="Inter, sans-serif">Age (mean)</text>
+        <rect x="381" y="100" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="381" y="100" width="120" height="10" rx="3" fill="#00BFA6"/>
+        <text x="381" y="127" font-size="9" fill="#374559" font-family="Inter, sans-serif">ECOG score</text>
+        <rect x="381" y="131" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="381" y="131" width="90" height="10" rx="3" fill="#00BFA6"/>
+        <text x="381" y="158" font-size="9" fill="#374559" font-family="Inter, sans-serif">Prior lines Rx</text>
+        <rect x="381" y="162" width="130" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="381" y="162" width="105" height="10" rx="3" fill="#00BFA6"/>
+
+        <text x="445" y="195" font-size="9" fill="#007A6B" text-anchor="middle" font-family="IBM Plex Mono, monospace">TARGET MOMENTS</text>
+
+        <!-- Weighted A -->
+        <rect x="545" y="30" width="145" height="170" rx="12" fill="#fff" stroke="#00BFA6" stroke-width="2"/>
+        <text x="617" y="54" font-size="12" font-weight="600" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif">Weighted A</text>
+        <text x="617" y="70" font-size="10" fill="#6B7A93" text-anchor="middle" font-family="Inter, sans-serif">Balanced to Study B</text>
+        <text x="561" y="96" font-size="9" fill="#374559" font-family="Inter, sans-serif">Age (mean)</text>
+        <rect x="561" y="100" width="115" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="561" y="100" width="113" height="10" rx="3" fill="#007A6B"/>
+        <text x="680" y="109" font-size="8" fill="#007A6B" font-family="IBM Plex Mono, monospace">✓</text>
+        <text x="561" y="127" font-size="9" fill="#374559" font-family="Inter, sans-serif">ECOG score</text>
+        <rect x="561" y="131" width="115" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="561" y="131" width="88" height="10" rx="3" fill="#007A6B"/>
+        <text x="680" y="140" font-size="8" fill="#007A6B" font-family="IBM Plex Mono, monospace">✓</text>
+        <text x="561" y="158" font-size="9" fill="#374559" font-family="Inter, sans-serif">Prior lines Rx</text>
+        <rect x="561" y="162" width="115" height="10" rx="3" fill="#C4CEDC"/>
+        <rect x="561" y="162" width="103" height="10" rx="3" fill="#007A6B"/>
+        <text x="680" y="171" font-size="8" fill="#007A6B" font-family="IBM Plex Mono, monospace">✓</text>
+        <text x="617" y="195" font-size="9" fill="#007A6B" text-anchor="middle" font-family="IBM Plex Mono, monospace">AFTER WEIGHTING</text>
+      </svg>
+    </div>
+
+    <p>The key diagnostic advantage of MAIC: <strong>balance can be directly verified</strong>. After computing weights, you simply check whether weighted covariate moments in Study A match the published moments from Study B. Poor balance is a transparent, quantifiable signal of residual bias — something parametric G-computation cannot offer.</p>
+
+    <h3>First vs Second Order Moments</h3>
+    <p>A subtle but important point: standard MAIC only balances <strong>first-order moments</strong> (means). If the outcome model involves squared terms or non-linear interactions — as Vo demonstrated in his simulation — matching on means alone leaves residual confounding. Extending MAIC to balance <strong>second-order moments</strong> (variances, squared covariates) provides additional protection, at the cost of reduced effective sample size and a greater risk of convergence failure.</p>
+
+    <div class="callout callout-teal">
+      <div class="callout-label">Key Insight</div>
+      <p>For entropy balancing (MAIC), the level of covariate balance achieved is directly observable and verifiable. For outcome modeling (G-computation), the adequacy of the model in non-overlapping regions is <strong>fundamentally unverifiable</strong> without additional data.</p>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- SECTION 2: EXTRAPOLATION -->
+  <section id="extrapolation">
+    <div class="section-label">Section 02</div>
+    <h2 class="section-title">Model-Based Extrapolation: Undesirable, But Sometimes Necessary</h2>
+
+    <p>The criticism of G-computation is well-founded: it extrapolates. But <em>what if extrapolation is the only option?</em> This is not a defence of sloppy modelling — it's an acknowledgement of the structural realities of HTA decision-making.</p>
+
+    <!-- Overlap spectrum -->
+    <div class="diagram-wrap">
+      <div class="diagram-title">Covariate Overlap Spectrum: Method Performance &amp; Risks</div>
+      <div style="padding: 8px 0;">
+        <div class="spectrum-bar">
+          <div class="spectrum-markers">
+            <div class="sp-marker">No overlap<br/><span style="font-size:8px;color:#888">MAIC fails</span></div>
+            <div class="sp-marker">Limited overlap<br/><span style="font-size:8px;color:#888">Both struggle</span></div>
+            <div class="sp-marker">Good overlap<br/><span style="font-size:8px;color:#888">Both valid</span></div>
+          </div>
+        </div>
+        <div class="spectrum-labels">
+          <span>← Populations very different</span>
+          <span>Populations similar →</span>
+        </div>
+      </div>
+
+      <svg viewBox="0 0 680 160" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Method behaviour across overlap levels">
+        <!-- Headers -->
+        <text x="10" y="20" font-size="10" fill="#6B7A93" font-family="IBM Plex Mono, monospace" font-weight="500">METHOD</text>
+        <text x="200" y="20" font-size="10" fill="#E84855" font-family="IBM Plex Mono, monospace" font-weight="500" text-anchor="middle">LOW OVERLAP</text>
+        <text x="400" y="20" font-size="10" fill="#F5A623" font-family="IBM Plex Mono, monospace" font-weight="500" text-anchor="middle">MODERATE OVERLAP</text>
+        <text x="590" y="20" font-size="10" fill="#00BFA6" font-family="IBM Plex Mono, monospace" font-weight="500" text-anchor="middle">HIGH OVERLAP</text>
+
+        <!-- MAIC row -->
+        <text x="10" y="58" font-size="11" fill="#0F1E3C" font-family="IBM Plex Serif, serif" font-weight="600">MAIC</text>
+        <rect x="120" y="40" width="160" height="30" rx="6" fill="#FDE8EA"/>
+        <text x="200" y="58" font-size="10" fill="#b52230" text-anchor="middle" font-family="Inter, sans-serif">May fail to converge</text>
+        <rect x="310" y="40" width="180" height="30" rx="6" fill="#FEF3DC"/>
+        <text x="400" y="58" font-size="10" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">High ESS loss, imprecise</text>
+        <rect x="510" y="40" width="160" height="30" rx="6" fill="#E0F7F4"/>
+        <text x="590" y="58" font-size="10" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Unbiased, reliable</text>
+
+        <!-- G-comp row -->
+        <text x="10" y="108" font-size="11" fill="#0F1E3C" font-family="IBM Plex Serif, serif" font-weight="600">G-comp</text>
+        <rect x="120" y="90" width="160" height="30" rx="6" fill="#FEF3DC"/>
+        <text x="200" y="108" font-size="10" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">Extrapolates — bias risk</text>
+        <rect x="310" y="90" width="180" height="30" rx="6" fill="#FEF3DC"/>
+        <text x="400" y="108" font-size="10" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">More precise than MAIC</text>
+        <rect x="510" y="90" width="160" height="30" rx="6" fill="#E0F7F4"/>
+        <text x="590" y="108" font-size="10" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Most efficient</text>
+
+        <!-- DR row -->
+        <text x="10" y="148" font-size="11" fill="#0F1E3C" font-family="IBM Plex Serif, serif" font-weight="600">DR</text>
+        <rect x="120" y="130" width="160" height="20" rx="5" fill="#E8EDF4"/>
+        <text x="200" y="143" font-size="9" fill="#374559" text-anchor="middle" font-family="Inter, sans-serif">Requires IPD — complex</text>
+        <rect x="310" y="130" width="180" height="20" rx="5" fill="#E0F7F4"/>
+        <text x="400" y="143" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Best bias protection</text>
+        <rect x="510" y="130" width="160" height="20" rx="5" fill="#E0F7F4"/>
+        <text x="590" y="143" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Gold standard</text>
+      </svg>
+    </div>
+
+    <h3>The Reimbursement Imperative</h3>
+    <p>This is the crux of the issue: HTA bodies do not have the luxury of saying "the populations are too different — we can't compare." Reimbursement decisions <em>must</em> be made. Patients are waiting. Economic models need to be populated.</p>
+
+    <p>When covariate distributions between the IPD trial and the aggregate data trial are divergent enough that MAIC cannot find a valid weighting solution (convergence failure), the analyst faces a stark choice: use G-computation with its extrapolation risk, or submit no adjusted estimate at all. The latter is almost always worse.</p>
+
+    <div class="callout callout-amber">
+      <div class="callout-label">The Honest Uncertainty Problem</div>
+      <p>Remiro-Azócar et al. acknowledge Vo's valid point: <strong>MAIC makes uncertainty more visible</strong> through extreme weights, while G-computation can appear deceptively precise. Interval estimates from G-computation do not automatically reflect extrapolation uncertainty. Analysts and reviewers should treat precision from G-computation with appropriate scepticism when overlap is limited.</p>
+    </div>
+
+    <h3>The Covariate Selection Dilemma</h3>
+    <p>A further tension: in anchored comparisons, NICE guidance suggests excluding covariates with poor overlap that are not effect modifiers. But identifying effect modifiers in practice is difficult — effect modification is <strong>scale-dependent</strong>, and for novel therapies, the clinical evidence base on drivers of treatment effect heterogeneity is often thin. Excluding weak effect modifiers to improve overlap can itself induce bias, as Vo's second simulation demonstrated.</p>
+
+    <p>There is an unavoidable trade-off:</p>
+    <ul class="prose-list">
+      <li><strong>More covariates adjusted:</strong> greater plausibility of conditional constancy (transportability), but worse overlap and ESS loss.</li>
+      <li><strong>Fewer covariates adjusted:</strong> better overlap and precision, but greater risk of residual confounding if excluded covariates are in fact effect modifiers.</li>
+    </ul>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- SECTION 3: DATA-ADAPTIVE -->
+  <section id="data-adaptive">
+    <div class="section-label">Section 03</div>
+    <h2 class="section-title">The Perils of Data-Adaptive G-Computation</h2>
+
+    <p>Given that parametric models are fragile, it seems natural to reach for machine learning — let the data decide the functional form. This is the appeal of <strong>data-adaptive G-computation</strong>: methods like lasso, random forests, or neural networks fitted to the outcome model. But this route has its own hidden traps.</p>
+
+    <!-- Convergence rate diagram -->
+    <div class="diagram-wrap">
+      <div class="diagram-title">Convergence Rates: Parametric vs Data-Adaptive Estimators</div>
+      <svg viewBox="0 0 640 220" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart showing convergence rates of parametric versus data adaptive estimators">
+        <!-- Axes -->
+        <line x1="60" y1="20" x2="60" y2="180" stroke="#C4CEDC" stroke-width="1.5"/>
+        <line x1="60" y1="180" x2="610" y2="180" stroke="#C4CEDC" stroke-width="1.5"/>
+        <text x="30" y="105" font-size="10" fill="#6B7A93" font-family="Inter, sans-serif" transform="rotate(-90,30,105)">Bias / MSE</text>
+        <text x="330" y="205" font-size="10" fill="#6B7A93" font-family="Inter, sans-serif" text-anchor="middle">Sample size (n) →</text>
+
+        <!-- Y tick labels -->
+        <text x="55" y="25" font-size="9" fill="#6B7A93" text-anchor="end" font-family="IBM Plex Mono, monospace">High</text>
+        <text x="55" y="100" font-size="9" fill="#6B7A93" text-anchor="end" font-family="IBM Plex Mono, monospace">Mid</text>
+        <text x="55" y="182" font-size="9" fill="#6B7A93" text-anchor="end" font-family="IBM Plex Mono, monospace">Low</text>
+
+        <!-- Parametric (misspecified): converges fast but to wrong value — flat line at medium bias -->
+        <path d="M60,170 Q150,170 240,140 Q330,118 610,115" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-dasharray="6,3"/>
+        <text x="590" y="112" font-size="9" fill="#F5A623" font-family="Inter, sans-serif" text-anchor="end">Parametric (misspecified)</text>
+        <text x="590" y="122" font-size="9" fill="#F5A623" font-family="Inter, sans-serif" text-anchor="end">converges fast → wrong target</text>
+
+        <!-- Parametric (correct): converges fast to zero -->
+        <path d="M60,170 Q200,160 350,70 Q480,25 610,18" fill="none" stroke="#00BFA6" stroke-width="2.5"/>
+        <text x="590" y="18" font-size="9" fill="#00BFA6" font-family="Inter, sans-serif" text-anchor="end">Parametric (correct)</text>
+        <text x="590" y="28" font-size="9" fill="#00BFA6" font-family="Inter, sans-serif" text-anchor="end">n^½ rate → true target</text>
+
+        <!-- Data-adaptive: slow convergence but to true value -->
+        <path d="M60,168 Q100,160 200,145 Q350,118 500,75 Q570,55 610,40" fill="none" stroke="#E84855" stroke-width="2.5"/>
+        <text x="590" y="43" font-size="9" fill="#E84855" font-family="Inter, sans-serif" text-anchor="end">Data-adaptive</text>
+        <text x="590" y="53" font-size="9" fill="#E84855" font-family="Inter, sans-serif" text-anchor="end">Slow convergence, but unbiased</text>
+
+        <!-- Horizontal dashed: asymptote of misspecified -->
+        <line x1="60" y1="115" x2="610" y2="115" stroke="#F5A623" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.35"/>
+
+        <!-- Small n annotation -->
+        <rect x="65" y="130" width="85" height="30" rx="5" fill="#FDE8EA"/>
+        <text x="107" y="143" font-size="9" fill="#b52230" text-anchor="middle" font-family="Inter, sans-serif">Small n: data-adaptive</text>
+        <text x="107" y="153" font-size="9" fill="#b52230" text-anchor="middle" font-family="Inter, sans-serif">has worst bias</text>
+      </svg>
+    </div>
+
+    <h3>Three Compounding Problems</h3>
+
+    <ul class="step-list">
+      <li>
+        <div class="step-num">1</div>
+        <p><strong>Slow convergence rates.</strong> Data-adaptive estimators converge to the truth, but at a rate slower than the parametric n<sup>½</sup> rate. In the small-to-moderate sample sizes typical of HTA submissions, this manifests as larger-than-expected bias and poor coverage of confidence intervals.</p>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <p><strong>Regularisation-induced bias.</strong> Methods like lasso regularise heavily to avoid overfitting — this is a feature for prediction, but a bug for causal inference. The lasso systematically down-weights or eliminates variables that are weak effect modifiers but correlated with study assignment, introducing confounding bias.</p>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <p><strong>Non-standard asymptotic distributions.</strong> Parametric estimators enjoy the central limit theorem — asymptotic normality allows straightforward bootstrap confidence intervals. Data-adaptive estimators have irregular asymptotic distributions that cannot easily be derived, making uncertainty quantification theoretically unsound with standard bootstrapping.</p>
+      </li>
+    </ul>
+
+    <h3>What About BART?</h3>
+    <p>The authors suggest <strong>Bayesian Additive Regression Trees (BART)</strong> as a promising alternative. BART is highly flexible, requires minimal tuning, and by sampling directly from the posterior distribution of the treatment effect, sidesteps the bootstrap problem — principled uncertainty quantification is built-in.</p>
+
+    <div class="callout callout-amber">
+      <div class="callout-label">BART: Promising but Not a Panacea</div>
+      <p>BART regularises heavily (like the lasso) to prevent overfitting, which can induce bias in treatment effect estimation. Crucially, <strong>regression trees are piecewise step functions</strong>: they partition the covariate space into disjoint rectangles and extrapolate beyond the overlap region using a constant value. Under poor overlap — exactly the scenario where G-computation gets called into service — BART's extrapolation can be particularly crude, and empirical evidence from causal inference literature shows poor coverage in these scenarios.</p>
+    </div>
+
+    <p>The message is clear: data-adaptive methods do not solve the extrapolation problem. They solve the <em>parametric misspecification</em> problem, but introduce new challenges around convergence, valid inference, and their own form of extrapolation failure.</p>
+
+    <table class="bias-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Bias from misspecification</th>
+          <th>Convergence rate</th>
+          <th>Valid CI coverage</th>
+          <th>Extrapolation behaviour</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Parametric G-comp (correct)</strong></td>
+          <td><span class="dot dot-green"></span>None</td>
+          <td>n<sup>½</sup> (fast)</td>
+          <td><span class="dot dot-green"></span>Yes (bootstrap/Wald)</td>
+          <td>Smooth, model-driven</td>
+        </tr>
+        <tr>
+          <td><strong>Parametric G-comp (wrong model)</strong></td>
+          <td><span class="dot dot-red"></span>Persistent, undetectable</td>
+          <td>n<sup>½</sup> (fast, wrong target)</td>
+          <td><span class="dot dot-red"></span>Zero asymptotically</td>
+          <td>Smooth but systematically wrong</td>
+        </tr>
+        <tr>
+          <td><strong>Lasso / ML G-comp</strong></td>
+          <td><span class="dot dot-amber"></span>Regularisation bias</td>
+          <td>Slow (subparametric)</td>
+          <td><span class="dot dot-red"></span>Bootstrap not valid</td>
+          <td>Variable; overfitting-penalised</td>
+        </tr>
+        <tr>
+          <td><strong>BART G-comp</strong></td>
+          <td><span class="dot dot-amber"></span>Heavy regularisation</td>
+          <td>Slow</td>
+          <td><span class="dot dot-amber"></span>Bayesian posterior (limited)</td>
+          <td>Piecewise constant (crude)</td>
+        </tr>
+        <tr>
+          <td><strong>MAIC (entropy balancing)</strong></td>
+          <td><span class="dot dot-green"></span>Low (if moments balanced)</td>
+          <td>n<sup>½</sup> asymptotically</td>
+          <td><span class="dot dot-green"></span>Yes (bootstrap)</td>
+          <td>No extrapolation needed</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- SECTION 4: DOUBLY-ROBUST -->
+  <section id="doubly-robust">
+    <div class="section-label">Section 04</div>
+    <h2 class="section-title">The Promise of Doubly-Robust Adjustment</h2>
+
+    <p>The most exciting methodological frontier is the <strong>doubly-robust (DR) framework</strong>. These methods combine a trial assignment model (how patients end up in each study) with an outcome model (what drives the outcome), and critically, only need <em>one</em> of the two to be correctly specified to achieve unbiased estimation.</p>
+
+    <!-- DR schematic -->
+    <div class="diagram-wrap">
+      <div class="diagram-title">Doubly-Robust Augmented Weighting: Two Paths to Consistency</div>
+      <svg viewBox="0 0 640 200" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Doubly robust estimator schematic showing two paths to consistency">
+        <!-- IPD box -->
+        <rect x="20" y="70" width="120" height="60" rx="10" fill="#E8EDF4" stroke="#C4CEDC" stroke-width="1.5"/>
+        <text x="80" y="95" font-size="11" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">IPD</text>
+        <text x="80" y="111" font-size="9" fill="#6B7A93" text-anchor="middle" font-family="Inter, sans-serif">Individual patient data</text>
+        <text x="80" y="122" font-size="9" fill="#6B7A93" text-anchor="middle" font-family="Inter, sans-serif">(Study A)</text>
+
+        <!-- Two arrows -->
+        <path d="M140,90 C180,60 220,50 260,50" fill="none" stroke="#F5A623" stroke-width="1.8" marker-end="url(#arrowA)"/>
+        <path d="M140,110 C180,140 220,150 260,150" fill="none" stroke="#00BFA6" stroke-width="1.8" marker-end="url(#arrowB)"/>
+        <defs>
+          <marker id="arrowA" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#F5A623"/>
+          </marker>
+          <marker id="arrowB" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#00BFA6"/>
+          </marker>
+        </defs>
+
+        <!-- Path 1: outcome model -->
+        <rect x="262" y="28" width="155" height="44" rx="8" fill="#FEF3DC" stroke="#F5A623" stroke-width="1.5"/>
+        <text x="340" y="46" font-size="10" fill="#8C5E0A" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Outcome Model</text>
+        <text x="340" y="60" font-size="9" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">E[Y | treatment, X]</text>
+
+        <!-- Path 2: trial assignment model -->
+        <rect x="262" y="128" width="155" height="44" rx="8" fill="#E0F7F4" stroke="#00BFA6" stroke-width="1.5"/>
+        <text x="340" y="146" font-size="10" fill="#007A6B" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Trial Assignment Model</text>
+        <text x="340" y="160" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">P(Study = A | X)</text>
+
+        <!-- Combine arrows -->
+        <path d="M417,50 C460,50 480,90 480,100" fill="none" stroke="#F5A623" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <path d="M417,150 C460,150 480,110 480,100" fill="none" stroke="#00BFA6" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+        <!-- DR estimator box -->
+        <rect x="485" y="65" width="145" height="70" rx="12" fill="#0F1E3C"/>
+        <text x="557" y="87" font-size="11" fill="#fff" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">DR Estimator</text>
+        <text x="557" y="103" font-size="9" fill="rgba(255,255,255,0.75)" text-anchor="middle" font-family="Inter, sans-serif">Unbiased if either</text>
+        <text x="557" y="116" font-size="9" fill="rgba(255,255,255,0.75)" text-anchor="middle" font-family="Inter, sans-serif">model is correct</text>
+        <text x="557" y="128" font-size="9" fill="#00BFA6" text-anchor="middle" font-family="IBM Plex Mono, monospace">Double protection</text>
+
+        <!-- OR label -->
+        <rect x="462" y="87" width="22" height="22" rx="11" fill="#374559"/>
+        <text x="473" y="103" font-size="10" fill="rgba(255,255,255,0.85)" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600">OR</text>
+      </svg>
+    </div>
+
+    <h3>The Slow Convergence Dividend</h3>
+    <p>Here is the most technically valuable insight in the paper. In a doubly-robust framework, the <strong>product of convergence rates</strong> is what matters. If both working models converge at a subparametric rate <em>r</em>, the DR estimator can still achieve the fast n<sup>½</sup> rate — provided the product r × r ≥ n<sup>½</sup>. This means data-adaptive methods are legitimately accommodated within DR frameworks in a way that they are not in singly-robust G-computation.</p>
+
+    <div class="callout callout-teal">
+      <div class="callout-label">Why Doubly-Robust + Machine Learning Works Better</div>
+      <p>The slow convergence of machine learning estimators (a bug in standalone G-computation) becomes tolerable inside a DR framework, because the overall convergence rate is determined by the <strong>product</strong> of the two sub-model rates. This is the mathematical justification for using Super Learner or similar ensemble methods within augmented weighting estimators for ITCs.</p>
+    </div>
+
+    <h3>Outstanding Challenges</h3>
+    <p>The authors are careful not to oversell the DR approach. Several challenges remain:</p>
+
+    <ul class="prose-list">
+      <li><strong>The Donsker condition:</strong> Asymptotic normality of DR estimators (which enables simple variance estimation) relies on an unverifiable regularity condition from empirical process theory. This condition may fail in high dimensions, restricting the complexity of machine learning methods that can be safely used.</li>
+      <li><strong>Cross-fitting:</strong> The Donsker condition can be relaxed using sample-splitting (cross-fitting), but this introduces additional finite-sample variance and must be iterated many times to remove dependence on the random split — computationally intensive when closed-form variance expressions are unavailable.</li>
+      <li><strong>Limited IPD access:</strong> Many DR methods require individual patient data on both sides of the comparison. In typical HTA settings, only one trial provides IPD; the other provides aggregate data only. Tractable approximations to the efficient influence function under aggregate data constraints remain an open research question.</li>
+    </ul>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- SECTION 5: DECISION GUIDE -->
+  <section id="decision-guide">
+    <div class="section-label">Practical Guidance</div>
+    <h2 class="section-title">A Decision Framework for HTA Analysts</h2>
+
+    <p>Translating the methodological debate into practice, here is a structured decision framework based on the key considerations in the paper:</p>
+
+    <div class="diagram-wrap">
+      <div class="diagram-title">Method Selection Flowchart for Covariate-Adjusted ITC</div>
+      <svg viewBox="0 0 660 440" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Decision flowchart for selecting indirect treatment comparison method">
+        <!-- Start -->
+        <rect x="240" y="10" width="180" height="40" rx="20" fill="#0F1E3C"/>
+        <text x="330" y="35" font-size="11" fill="#fff" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Individual patient data (IPD)?</text>
+
+        <!-- No IPD -->
+        <path d="M240,30 L90,30 L90,90" fill="none" stroke="#E84855" stroke-width="1.8" marker-end="url(#arrowR)"/>
+        <text x="165" y="24" font-size="9" fill="#E84855" font-family="IBM Plex Mono, monospace">NO</text>
+        <defs>
+          <marker id="arrowR" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#E84855"/>
+          </marker>
+          <marker id="arrowG" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#00BFA6"/>
+          </marker>
+          <marker id="arrowGG" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#374559"/>
+          </marker>
+        </defs>
+        <rect x="30" y="90" width="120" height="40" rx="8" fill="#FDE8EA" stroke="#E84855" stroke-width="1.5"/>
+        <text x="90" y="113" font-size="10" fill="#b52230" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">Unanchored ITC only</text>
+
+        <!-- Yes IPD -->
+        <path d="M330,50 L330,90" fill="none" stroke="#00BFA6" stroke-width="1.8" marker-end="url(#arrowG)"/>
+        <text x="338" y="76" font-size="9" fill="#00BFA6" font-family="IBM Plex Mono, monospace">YES</text>
+
+        <!-- Overlap check -->
+        <rect x="220" y="90" width="220" height="40" rx="8" fill="#E8EDF4" stroke="#C4CEDC" stroke-width="1.5"/>
+        <text x="330" y="113" font-size="11" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Assess covariate overlap</text>
+
+        <path d="M330,130 L330,170" fill="none" stroke="#374559" stroke-width="1.5" marker-end="url(#arrowGG)"/>
+
+        <rect x="205" y="170" width="250" height="40" rx="8" fill="#E8EDF4" stroke="#C4CEDC" stroke-width="1.5"/>
+        <text x="330" y="193" font-size="11" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Sufficient overlap for MAIC?</text>
+
+        <!-- No overlap: G-comp -->
+        <path d="M205,190 L90,190 L90,260" fill="none" stroke="#F5A623" stroke-width="1.8" marker-end="url(#arrowAA)"/>
+        <text x="148" y="184" font-size="9" fill="#F5A623" font-family="IBM Plex Mono, monospace">NO</text>
+        <defs>
+          <marker id="arrowAA" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#F5A623"/>
+          </marker>
+          <marker id="arrowBB" markerWidth="7" marketHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="#00BFA6"/>
+          </marker>
+        </defs>
+        <rect x="20" y="260" width="140" height="55" rx="8" fill="#FEF3DC" stroke="#F5A623" stroke-width="2"/>
+        <text x="90" y="281" font-size="10" fill="#8C5E0A" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Parametric G-comp</text>
+        <text x="90" y="295" font-size="9" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">+ sensitivity analysis</text>
+        <text x="90" y="308" font-size="9" fill="#8C5E0A" text-anchor="middle" font-family="Inter, sans-serif">on model assumptions</text>
+
+        <!-- Yes overlap -->
+        <path d="M455,190 L560,190 L560,260" fill="none" stroke="#00BFA6" stroke-width="1.8" marker-end="url(#arrowG)"/>
+        <text x="508" y="184" font-size="9" fill="#00BFA6" font-family="IBM Plex Mono, monospace">YES</text>
+
+        <!-- MAIC branch -->
+        <rect x="500" y="260" width="120" height="55" rx="8" fill="#E0F7F4" stroke="#00BFA6" stroke-width="2"/>
+        <text x="560" y="281" font-size="10" fill="#007A6B" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">MAIC</text>
+        <text x="560" y="295" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Entropy balancing</text>
+        <text x="560" y="308" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">+ balance diagnostics</text>
+
+        <!-- Middle path: adequate overlap -->
+        <path d="M330,210 L330,260" fill="none" stroke="#374559" stroke-width="1.5" marker-end="url(#arrowGG)"/>
+        <rect x="225" y="260" width="210" height="55" rx="8" fill="#fff" stroke="#0F1E3C" stroke-width="2"/>
+        <text x="330" y="281" font-size="10" fill="#0F1E3C" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Doubly-Robust Estimator</text>
+        <text x="330" y="295" font-size="9" fill="#374559" text-anchor="middle" font-family="Inter, sans-serif">Assignment + outcome model</text>
+        <text x="330" y="308" font-size="9" fill="#007A6B" text-anchor="middle" font-family="Inter, sans-serif">Best bias protection available</text>
+
+        <!-- All converge to sensitivity -->
+        <path d="M330,315 L330,360" fill="none" stroke="#374559" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrowGG)"/>
+        <path d="M90,315 Q90,340 200,360" fill="none" stroke="#374559" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrowGG)"/>
+        <path d="M560,315 Q560,340 460,360" fill="none" stroke="#374559" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arrowGG)"/>
+
+        <rect x="150" y="360" width="360" height="50" rx="10" fill="#0F1E3C"/>
+        <text x="330" y="381" font-size="11" fill="#fff" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">Always report: uncertainty, assumptions &amp;</text>
+        <text x="330" y="397" font-size="11" fill="#00BFA6" text-anchor="middle" font-family="IBM Plex Serif, serif" font-weight="600">sensitivity analyses to HTA body</text>
+      </svg>
+    </div>
+
+    <h3>Practical Checklist for HTA Submissions</h3>
+    <ul class="step-list">
+      <li>
+        <div class="step-num">1</div>
+        <p><strong>Assess overlap first.</strong> Visualise covariate distributions of both studies. Compute standardised mean differences. If major imbalances exist, MAIC's effective sample size will be severely reduced. Document this.</p>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <p><strong>Attempt MAIC as primary analysis.</strong> Entropy balancing is more bias-robust. Report balance diagnostics (standardised mean differences before and after weighting). Extreme weights should trigger an explicit discussion of uncertainty.</p>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <p><strong>Use G-computation as a supportive/sensitivity analysis.</strong> Fit a parametric outcome model; document model selection explicitly and transparently. Acknowledge that model performance cannot be validated in non-overlapping regions.</p>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <p><strong>If G-computation is the primary analysis</strong> (due to MAIC convergence failure), acknowledge the extrapolation explicitly and provide probabilistic sensitivity analyses that propagate model uncertainty into the economic model.</p>
+      </li>
+      <li>
+        <div class="step-num">5</div>
+        <p><strong>Consider doubly-robust approaches.</strong> Where IPD is available for both studies, augmented weighting estimators with Super Learner-based nuisance models represent the current methodological frontier. Engage with statistical experts early.</p>
+      </li>
+    </ul>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- CONCLUSIONS -->
+  <section id="conclusions">
+    <div class="section-label">Synthesis</div>
+    <h2 class="section-title">Conclusions: No Free Lunch, Many Trade-Offs</h2>
+
+    <p>The methodological debate between MAIC and G-computation is not a debate about which method is correct — it is a debate about which failure mode is more acceptable in which context. Both methods fail when their assumptions break down. The analyst's job is to understand <em>how</em> each method fails and whether that failure mode is tolerable given the decision context.</p>
+
+    <div class="method-grid">
+      <div class="method-card">
+        <span class="method-card-tag tag-teal">Use when</span>
+        <h4>MAIC / Entropy Balancing</h4>
+        <p>Covariate distributions have meaningful overlap. Bias transparency is the priority. For primary analysis in NICE submissions following current guidance.</p>
+        <div class="verdict verdict-good">First-line for anchored comparisons</div>
+      </div>
+      <div class="method-card">
+        <span class="method-card-tag tag-amber">Use when</span>
+        <h4>Parametric G-computation</h4>
+        <p>MAIC has convergence failures or precision is critically low. Subject-matter knowledge supports the parametric functional form. Use with extensive sensitivity analysis.</p>
+        <div class="verdict verdict-caution">Supportive / fallback analysis</div>
+      </div>
+      <div class="method-card">
+        <span class="method-card-tag tag-navy">Aspire to</span>
+        <h4>Doubly-Robust Methods</h4>
+        <p>IPD available for both studies (or can be simulated). Analyst has expertise in ML-based nuisance estimation, cross-fitting. Currently the methodological frontier.</p>
+        <div class="verdict verdict-good">Future gold standard</div>
+      </div>
+    </div>
+
+    <div class="pull-quote">
+      <p>"Precision and efficiency under no failures of assumptions should not be the only characteristics determining the choice of a suitable estimator. The level of bias reduction due to covariate adjustment is easier to assess for weighting than for outcome modeling."</p>
+      <cite>Remiro-Azócar, Heath &amp; Baio — Research Synthesis Methods, 2023</cite>
+    </div>
+
+    <p>What the paper ultimately advocates for is a methodological humility that is sometimes absent from HTA submissions: the recognition that all covariate adjustment methods rest on untestable assumptions, that the appropriateness of those assumptions varies by context, and that <strong>transparent, honest uncertainty quantification</strong> is as important as point estimate precision in supporting robust health technology decisions.</p>
+
+    <p>The development of <strong>core patient characteristic sets</strong> — standardised lists of prognostic covariates to be collected and reported across therapeutic areas — could materially reduce the problem of unavailable or inconsistently defined influential covariates, which no statistical method can overcome.</p>
+
+    <div class="callout callout-navy">
+      <div class="callout-label">The Bottom Line for HTA Practitioners</div>
+      <p>There is no universally superior method. MAIC's bias transparency makes it the natural starting point. G-computation is a pragmatic tool when MAIC breaks down, but requires honest acknowledgement of extrapolation. Doubly-robust estimators represent the methodological direction of travel. Whichever method you choose: show your diagnostics, document your assumptions, and propagate your uncertainty all the way through to the economic model.</p>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer>
+  <p><strong style="color:rgba(255,255,255,0.8);">Source Publication</strong></p>
+  <p>Remiro-Azócar A, Heath A, Baio G. "Methodological considerations for novel approaches to covariate-adjusted indirect treatment comparisons." <em>Research Synthesis Methods</em>, 2023. arXiv:2305.08651v2</p>
+  <p style="margin-top:16px;">Blog prepared for educational purposes in health technology assessment methodology.</p>
+  <p style="margin-top:24px; font-size:11px; color:rgba(255,255,255,0.3);">MAIC · G-computation · Doubly-Robust Estimation · Entropy Balancing · HTA Statistics</p>
+</footer>
+
+</body>
+</html>
